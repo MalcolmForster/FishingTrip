@@ -1,0 +1,71 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">FishingTrip</h1>
+    <h2>For planning and tracking all of you fishing trips</h2>
+
+    <h2>For tracking all of your fishing data</h2>
+    <p id="msg">What this application is capable of:</p>
+    <ul>
+        <li class="list">Returns weather and wave information for you favourite fishing locations</li>
+        <li class="list">Recommends best fishing days for you based on fishing history</li>
+        <li class="list">Records your fishing trips for you and the conditions</li>
+        <br>
+        <ul>
+            <noscript>You need to enable JavaScript to view the full site.</noscript>
+
+            <html>
+            <div class="login">
+                <h2>Login</h2></br></br>
+                <form id="login" method="post" action="<?php echo htmlspecialchars($_SERVER[" PHP_SELF"]); ?>
+                    ">
+                    <label>
+                        <b>
+                            User Name :
+                        </b>
+                    </label>
+                    <input type='text' name='Uname' id='Uname' placeholder='Username' required>
+                    <br><br>
+
+                    <label>
+                        <b>
+                            Password :
+                        </b>
+                    </label>
+                    <input type='Password' name='Pass' id='Pass' placeholder='Password' required>
+                    <br><br>
+
+                    <input type='submit' name='login' id='log' value='login'>
+
+                    <input type='checkbox' id='check'>
+                    <span>Remember me</span>
+                    <br><br>
+
+                    Forgot <a href='user/resetpass'>Password</a>
+                    <br><br>
+
+                    Don't have an account?
+                    <a href='user/register.php'>
+                        Click Here
+                    </a>
+                    <br><br>
+                </form>
+            </div>
+
+            <div>
+
+                <h2>Welcome <?php echo($_SESSION["username"]) ?></h2></br>
+
+                <br></br>
+            </div></br>
+
+            <h1>Recent Posts and fishing trips from friends</h1>
+            <p>Creating a method to collect a certain number of posts from the database from friends and own user
+                  This could be harder to do because of the multiple database
+                  Use a combine function to add them all together?</p>
+            <p>Insert recent friend posts here</p>
+</div>

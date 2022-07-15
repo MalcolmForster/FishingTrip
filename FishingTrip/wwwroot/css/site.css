@@ -1,10 +1,16 @@
+:root {
+    --bg-blue-light: #c6cbcd;
+    --bg-blue-dark: #2a2b2c;
+    --hl-blue: #94b7ca;
+}
+
 html {
   font-size: 14px;
 }
 
 @media (min-width: 768px) {
   html {
-    font-size: 16px;
+    font-size: 16px;    
   }
 }
 
@@ -13,6 +19,57 @@ html {
   min-height: 100%;
 }
 
+.bg-dark {
+    background-color: steelblue;
+}
+
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    background-color: var(--bg-blue-dark);
+    color: var(--bg-blue-light);
+}
+
+ul {
+    align-items:center;
+}
+
+h1 {
+    font-size: 20px;
+}
+
+h2 {
+    font-size: 20px;
+}
+
+h3 {
+    font-size: 15px;
+    font-style:italic;
+
+}
+
+select {
+    min-width:200px;
+}
+
+.list {
+    list-style:none;
+}
+
+.bg-nav {
+    background-color: var(--hl-blue);
+}
+
+.bg-nav-item {
+    margin-left: 5px;
+    background-color: lightgray;
+    border-radius: 5px;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+    margin-top: 0;
+}
+
+.nav-item-right {
+    text-align:right;
 }

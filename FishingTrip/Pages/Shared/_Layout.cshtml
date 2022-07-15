@@ -10,31 +10,61 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-nav border-bottom box-shadow mb-3">
+
             <div class="container">
                 <a class="navbar-brand" asp-area="" asp-page="/Index">FishingTrip</a>
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-start">
+
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Plan
+                            </a>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                    <li><a class="dropdown-item" asp-area="" asp-page="/forecast">Spot forecast</a></li>
+                                    <li><a class="dropdown-item" href="#">Plan a trip</a></li>
+                                    <li><a class="dropdown-item" href="#">See planned trips</a></li>
+                            </ul>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Remember
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                <li><a class="dropdown-item" href="#">Record a trip</a></li>
+                                <li><a class="dropdown-item" href="#">Generic Post</a></li>
+                            </ul>
                         </li>
-                        <li class="nav-item"><a class="nav-link text-dark" href = "user/fishforecast.php">Fishing Forecast</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" href = "user/fishhistory.php">Fishing History</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" href = "user/shouldigo.php">Should I go fishing?</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" href = "user/friends.php">Friends</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" href = "user/fishingtrip.php">Record a fishing trip</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" href = "user/newpost.php">New Generic Post</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" href = "user/posts.php">View my Posts</a></li>
-                        <li class="nav-item"><a class="nav-link text-dark" href = "user/usercontrol.php">User Control Panel</a><li>
+
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Reminisce
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                <li><a class="dropdown-item" href="#">View past fishing trips</a></li>
+                                <li><a class="dropdown-item" href="#">See friends fishing trips</a></li>
+                                <li><a class="dropdown-item" href="#">See all Recent posts</a></li>
+                            </ul>
+                        </li>
                     </ul>
+
                     <partial name="_LoginPartial" />
+                        @*                        <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-page="user/fishforecast.php">Forecast</a>
+                        </li>*@
+
                 </div>
             </div>
         </nav>

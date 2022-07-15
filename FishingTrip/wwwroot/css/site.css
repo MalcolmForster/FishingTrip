@@ -1,18 +1,166 @@
+:root {
+    --bg-blue-light: #c6cbcd;
+    --bg-blue-dark: #2a2b2c;
+    --hl-blue: #94b7ca;
+}
+
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
+}
+
+.bg-dark {
+    background-color: steelblue;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    background-color: var(--bg-blue-dark);
+    color: var(--bg-blue-light);
 }
+
+ul {
+    align-items: center;
+}
+
+h1 {
+    font-size: 20px;
+}
+
+h2 {
+    font-size: 20px;
+}
+
+h3 {
+    font-size: 15px;
+    font-style: italic;
+}
+
+select {
+    min-width: 200px;
+}
+
+.list {
+    list-style: none;
+}
+
+.bg-nav {
+    background-color: var(--hl-blue);
+}
+
+.bg-nav-item {
+    margin-left: 5px;
+    background-color: lightgray;
+    border-radius: 5px;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+    margin-top: 0;
+}
+
+.nav-item-right {
+    text-align: right;
+}
+
+.favSpotList {
+    padding: 0px;
+}
+
+    .favSpotList li {
+        margin: 10px;
+        height: 100px;
+        width: 100%;
+        border-radius: 10px;
+        border: 10px;
+        background-color: black;
+        list-style: none;
+        color: white;
+    }
+
+    .favSpotList a {
+        text-decoration: none;
+        color: white;
+    }
+
+/*The following css is for the loading animation for when favourite spots are loading, found at https://loading.io/css/*/
+
+.lds-ellipsis {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+    .lds-ellipsis div {
+        position: absolute;
+        top: 33px;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: var(--hl-blue);
+        animation-timing-function: cubic-bezier(0, 1, 1, 0);
+    }
+
+
+        .lds-ellipsis div:nth-child(1) {
+            left: 8px;
+            animation: lds-ellipsis1 0.6s infinite;
+        }
+
+        .lds-ellipsis div:nth-child(2) {
+            left: 8px;
+            animation: lds-ellipsis2 0.6s infinite;
+        }
+
+        .lds-ellipsis div:nth-child(3) {
+            left: 32px;
+            animation: lds-ellipsis2 0.6s infinite;
+        }
+
+        .lds-ellipsis div:nth-child(4) {
+            left: 56px;
+            animation: lds-ellipsis3 0.6s infinite;
+        }
+
+@keyframes lds-ellipsis1 {
+    0% {
+        transform: scale(0);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes lds-ellipsis3 {
+    0% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(0);
+    }
+}
+
+@keyframes lds-ellipsis2 {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    100% {
+        transform: translate(24px, 0);
+    }
+}
+
+/*end of loading animation*/

@@ -1,71 +1,104 @@
 ﻿@page
+@using Microsoft.AspNetCore.Identity
+@using static FishingTrip.Pages.Shared._Common;
 @model IndexModel
+@inject SignInManager<IdentityUser> SignInManager;
+
 @{
     ViewData["Title"] = "Home page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">FishingTrip</h1>
-    <h2>For planning and tracking all of you fishing trips</h2>
+<!DOCTYPE html>
+<html lang="en">
+    <div class="text-center">
+        <h1 class="display-4">FishingTrip</h1>
+        <h2>For planning and tracking all of you fishing trips</h2>
 
-    <h2>For tracking all of your fishing data</h2>
-    <p id="msg">What this application is capable of:</p>
-    <ul>
-        <li class="list">Returns weather and wave information for you favourite fishing locations</li>
-        <li class="list">Recommends best fishing days for you based on fishing history</li>
-        <li class="list">Records your fishing trips for you and the conditions</li>
-        <br>
-        <ul>
-            <noscript>You need to enable JavaScript to view the full site.</noscript>
+        @*    Ideas as follows:
+        Weather forecast for favourite spots
+        See recent posts/fishing trips of friends and self*@
+        
+        @if (SignInManager.IsSignedIn(User))
+        {
+        //remove_Favourite("Test");
+        <h1>Recent Posts and fishing trips from friends</h1>
+        <p>
+            Creating a method to collect a certain number of posts from the database from friends and own user
+            This could be harder to do because of the multiple database
+            Use a combine function to add them all together?
+        </p>
+        <p>Insert recent friend posts here</p>
+        //Find method to be able to find friends and then add there most recent posts similar to the old PHP style site
 
-            <html>
-            <div class="login">
-                <h2>Login</h2></br></br>
-                <form id="login" method="post" action="<?php echo htmlspecialchars($_SERVER[" PHP_SELF"]); ?>
-                    ">
-                    <label>
-                        <b>
-                            User Name :
-                        </b>
-                    </label>
-                    <input type='text' name='Uname' id='Uname' placeholder='Username' required>
-                    <br><br>
 
-                    <label>
-                        <b>
-                            Password :
-                        </b>
-                    </label>
-                    <input type='Password' name='Pass' id='Pass' placeholder='Password' required>
-                    <br><br>
+        <h1>Favourite fishing locations - Quick view</h1>
+        <label>This weeks conditions at your favourite fishing spots</label>
+        <form id="checkDays" action="~/" method="post">
+            <label>Days to compare: </label>
+            <ul class="favSpotList">
+                @{
+                    string[] week = nextDays(7);
+                    for (int i = 0; i < week.Length; i++)
+                    {
+                        if (week[i] != "")
+                        {
+                                    <label>@week[i]:</label>
+                            if (i < 3)
+                            {
+                                        <input type="checkbox" action="~/" name="dayChk" value=@week[i] checked />
+                            }
+                            else
+                            {
+                                        <input type="checkbox" action="~/" value=@week[i] />
+                            }
+                        }
+                    }
+                }
+            </ul>
+        </form>
+        <form id="checkSpot" action="~/" method="post">
+            <ul class="favSpotList">
+                @{
+                    // this may need to change from a list. What I am aiming to do is have the conditions shown for the users favourite spots for easy comparison. This will require a loading animation while the server recieves and redirects the fishing spots forecast. This information is all passed with a JSON file for each day, for each spot, perhaps should limit to 3 spots initially.
+                    string[] favSpots = getFavSpots(User.Claims.ElementAtOrDefault(0).Value);
+                    foreach (string spot in favSpots)
+                    {
+                        if (spot != "")
+                        {
+                            <li name=@spot.Replace(" ","_")>
+                                <h3>@spot</h3>
+                                <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                            </li>
+                        }
+                    }
+                }
+            </ul>
+        </form>
 
-                    <input type='submit' name='login' id='log' value='login'>
+        <form id="addFav" action="~/" method="post">
+            <label>Add favourite fishing spot</label>
+            <input type="text" name="favSpot" width="50" value="" />
+            <input type="hidden" name="addFavourite" value="true" />
+            <input type="submit" value="Add favourite" />
+        </form>
+        <form id="rmvFav" action="~/" method="post">
+            <label>Remove a favourite fishing spot</label>
+            <input type="text" name="rmvSpot" width="50" value="" />
+            <input type="hidden" name="rmvFavourite" value="true" />
+            <input type="submit" value="Remove favourite" />
+        </form>
 
-                    <input type='checkbox' id='check'>
-                    <span>Remember me</span>
-                    <br><br>
+    }
+        else
+        {
+            <h2>For tracking all of your fishing data</h2><br></br>
+            <h3>What this application is capable of:</h3>
+            <ul>
+                <li class="list">Returns weather and wave information for you favourite fishing locations</li>
+                <li class="list">Recommends best fishing days for you based on fishing history</li>
+                <li class="list">Records your fishing trips for you and the conditions</li>
+            </ul>
+        }
+    </div>
+</html>
 
-                    Forgot <a href='user/resetpass'>Password</a>
-                    <br><br>
-
-                    Don't have an account?
-                    <a href='user/register.php'>
-                        Click Here
-                    </a>
-                    <br><br>
-                </form>
-            </div>
-
-            <div>
-
-                <h2>Welcome <?php echo($_SESSION["username"]) ?></h2></br>
-
-                <br></br>
-            </div></br>
-
-            <h1>Recent Posts and fishing trips from friends</h1>
-            <p>Creating a method to collect a certain number of posts from the database from friends and own user
-                  This could be harder to do because of the multiple database
-                  Use a combine function to add them all together?</p>
-            <p>Insert recent friend posts here</p>
-</div>

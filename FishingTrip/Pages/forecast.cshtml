@@ -1,0 +1,101 @@
+@page
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<!DOCTYPE html>
+<!--<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>-->
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-U cA-Compatible" content="IE=edge">
+    <meta name="viewport"ontent="width=device-width, initial-scale=1.0">
+    <title>Fishr</title>
+    <link rel="stylesheet" href="../main.css">
+</head>
+<body class="light-theme">
+    <h2>Spot Forecast</h2>
+    <p>This section is designed to allow the fisherman to quickly see all the stats of their favourite fishing spot, limited to weather data within a week. The select days below will be the next occurance of that day.</p>
+    <!--
+
+      What to include on this page:
+      - Add/remove favourite fishing spots
+      - Select single or multiple fishing spots to compare -> checkboxes in option boxes need to be done with JS apparently
+      - Quick comparison between these fishing spots already loaded
+      - Search any fishing spots and compare to favourites maybe?
+
+      -->
+    
+    <form id="checkSpot" method="post" action="<?php echo htmlspecialchars($_SERVER[" PHP_SELF"]); ?>
+        <h3>Check conditions at a fishing spot</h3>
+        <input type="text" name="fishSpot" placeholder="Find a fishing spot" />
+        @if (SignInManager.IsSignedIn(User))
+        {
+            <label>Add to favourites ? </label>
+            <input type="checkbox" name="addNewFav" />
+            <br>
+            @*  
+                <!-- <form id="favSpots" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>"> -->
+                <?php
+                $sqlq = "SELECT `favspots` FROM `users` WHERE `Username` = '".trim($_SESSION['username'])."';";
+                $results = mysqli_query($link,$sqlq);
+                $resultString = mysqli_fetch_row($results);
+                $favSpots = str_getcsv($resultString[0]);
+                unset($favSpots[array_search("",$favSpots)]);
+                mysqli_free_result($results);
+                ?>
+             *@
+
+            <br>
+            <I> Or choose from current favourites</I>
+
+            <br>
+            <select name="favCurrents" >
+                <option selected disabled>Choose an option</option>
+                @*
+                    Put in a new method in c# to find favourite fishing spots, perhaps in the Program.cs file, and then inject these into the select box here.
+                *@
+
+                @{
+                    
+                    
+
+
+                }
+
+                @*
+                    <? php
+                    foreach ($favSpots as $spot) {
+                    echo "
+                    <option name = 'option' value = '$spot'>$spot </option>";
+                    }
+                    ?>
+                *@
+            </select>
+
+            <input type='submit' name='rmvFav' value='Remove Spot from Favourites' />
+            <br>
+            <br>
+        }
+        <p>Select Days:</p>
+
+        <ul name="DayList">
+            <li>Monday    <input type="checkbox" name="days[]" value="Mon" /></li>
+            <li>Tuesday   <input type="checkbox" name="days[]" value="Tue" /></li>
+            <li>Wednesday <input type="checkbox" name="days[]" value="Wed" /></li>
+            <li>Thursday  <input type="checkbox" name="days[]" value="Thu" /></li>
+            <li>Friday    <input type="checkbox" name="days[]" value="Fri" /></li>
+            <li>Saturday  <input type="checkbox" name="days[]" value="Sat" /></li>
+            <li>Sunday    <input type="checkbox" name="days[]" value="Sun" /></li>
+        </ul>
+
+        <input type='submit' name='checkSpot' value='Submit'></br>
+    </form>
+
+    <noscript>You need to enable JavaScript to view the full site.</noscript>
+    <a href="~/">Return to homepage</a>
+</body>
+<br>
+<br>
+</html>

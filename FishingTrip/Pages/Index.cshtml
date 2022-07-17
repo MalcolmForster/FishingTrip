@@ -20,6 +20,7 @@
         
         @if (SignInManager.IsSignedIn(User))
         {
+            string[] week = nextDays(7);
         //remove_Favourite("Test");
         <h1>Recent Posts and fishing trips from friends</h1>
         <p>
@@ -37,24 +38,19 @@
             <label>Days to compare: </label>
             <ul class="favSpotList">
                 @{
-                    string[] week = nextDays(7);
+                    //string[] week = nextDays(7);
+
                     for (int i = 0; i < week.Length; i++)
                     {
                         if (week[i] != "")
                         {
-                                    <label>@week[i]:</label>
-                            if (i < 3)
-                            {
-                                        <input type="checkbox" action="~/" name="dayChk" value=@week[i] checked />
-                            }
-                            else
-                            {
-                                        <input type="checkbox" action="~/" value=@week[i] />
-                            }
+                                <label>@week[i]:</label>
+                                <input type="checkbox" action="~/" name="dayChk" value=@week[i] checked />
                         }
                     }
                 }
             </ul>
+            <input type="submit" value="Show for selected Days" width="200"/>
         </form>
         <form id="checkSpot" action="~/" method="post">
             <ul class="favSpotList">
@@ -65,10 +61,22 @@
                     {
                         if (spot != "")
                         {
-                            <li name=@spot.Replace(" ","_")>
+                            Dictionary<string, Hour[]> data = getFavConditions("Port Waikato", week);
+                            string[] checkedDays = getCheckedDays();
+
+                                <li name=@spot.Replace(" ","_")>
                                 <h3>@spot</h3>
+                                <div>
+                                    @{                                        
+                                        foreach (string day in week)
+                                        {
+                                            object ob = data[day.Substring(0,3)];
+                                            <p>@ob.ToString()</p>
+                                        }
+                                    }
+                                        </div>
                                 <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-                            </li>
+                                </li>
                         }
                     }
                 }

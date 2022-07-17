@@ -7,7 +7,7 @@ using System.Data.SqlClient;
 namespace FishingTrip.Pages.Shared
 {
     public class _Common
-    {
+    {      
         public static string[] nextDays(int num)
         {
             string[] days = new string[num];
@@ -26,30 +26,34 @@ namespace FishingTrip.Pages.Shared
         private static SqlConnection dbConnect()
         {
             string MyConnectionString = "Server=(localdb)\\MSSQLLocalDB;Database=aspnet-FishingTrip-53bc9b9d-9d6a-45d4-8429-2a2761773502;user=FishingTrip;password=FishingTrip123;";
+            SqlDataReader rdr = null;
             SqlConnection cnn;
             cnn = new SqlConnection(MyConnectionString);
+
             try
             {
                 cnn.Open();
                 return cnn;
             } catch
-            {
+                {
                 Console.WriteLine("Failed to connect to database");
                 return null;
+                }
+
+
             }
-        }
 
         private static void closeDB(SqlConnection cnn,SqlDataReader rdr)
-        {
-            if (rdr != null)
             {
-                rdr.Close();
+                if (rdr != null)
+                {
+                    rdr.Close();
+                }
+                if (cnn != null)
+                {
+                    cnn.Close();
+                }                
             }
-            if (cnn != null)
-            {
-                cnn.Close();
-            }
-        }
         private static void dbExecute(string command)
         {
             SqlConnection cnn = dbConnect();
@@ -60,7 +64,7 @@ namespace FishingTrip.Pages.Shared
             } catch
             {
                 Console.WriteLine("Execute command failed");
-            }
+        }
 
         }
 
@@ -80,17 +84,17 @@ namespace FishingTrip.Pages.Shared
 
 
 
-            //$directory = str_replace("user", "scripts/FSServer.py", getcwd());
+              //$directory = str_replace("user", "scripts/FSServer.py", getcwd());
+  
+              //$command = ("python3 ". $directory." request \"".trim($_POST['fishSpot'])."\" ".join(" ",$_POST['days']));
+              //$output = exec($command);
 
-            //$command = ("python3 ". $directory." request \"".trim($_POST['fishSpot'])."\" ".join(" ",$_POST['days']));
-            //$output = exec($command);
+              //// $command = escapeshellcmd("python3 " . $directory." request \"" . trim($_POST['fishSpot']) ."\" ". join(" ",$_POST['days']));
+              //// $output = shellexec($command);
 
-            //// $command = escapeshellcmd("python3 " . $directory." request \"" . trim($_POST['fishSpot']) ."\" ". join(" ",$_POST['days']));
-            //// $output = shellexec($command);
+              //$decoded = json_decode($output, TRUE);
 
-            //$decoded = json_decode($output, TRUE);
-
-            //echo $decoded["Wed"];
+              //echo $decoded["Wed"];
 
             return json;
         } */
@@ -107,9 +111,9 @@ namespace FishingTrip.Pages.Shared
                 try
                 {
                     cmd.Parameters.AddWithValue("@userID", uId);
-                }
+        }
                 catch
-                {
+        {
                     Console.WriteLine("Parameters failed to be added to query");
                 }                
                 try
@@ -119,7 +123,7 @@ namespace FishingTrip.Pages.Shared
                         if (rdr.Read())
                         {
                             string[] allSpots = rdr.GetString(0).Trim('\'').Split(",");
-                           
+            
                             return allSpots;
                         }
                     }
@@ -153,7 +157,7 @@ namespace FishingTrip.Pages.Shared
                 if (addFav == true)
                 {
                     string newFavConcat = String.Join(",", allSpots) + fav + ",";
-                    
+
                     SqlConnection conn = dbConnect();
                     string query = "UPDATE [dbo].[AspNetUsers] SET [FavSpots] = @newFavs WHERE Id= @userID;";
                     SqlCommand alterFavs = new SqlCommand(query, conn);
@@ -192,7 +196,7 @@ namespace FishingTrip.Pages.Shared
                     }
                 }
                 if (rmvFav == true)
-                {
+        {
                     string newFavConcat = String.Join(",", allSpots).Replace(fav +",","");
                     SqlConnection conn = dbConnect();
                     string query = "UPDATE [dbo].[AspNetUsers] SET [FavSpots] = @newFavs WHERE Id= @userID;";

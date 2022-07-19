@@ -61,18 +61,29 @@
                     {
                         if (spot != "")
                         {
-                            Dictionary<string, Hour[]> data = getFavConditions("Port Waikato", week);
-                            string[] checkedDays = getCheckedDays();
-
+                            Dictionary<string, Hour[]> data = getFavConditions(spot, week);
+                            //string[] checkedDays = getCheckedDays();
                                 <li name=@spot.Replace(" ","_")>
                                 <h3>@spot</h3>
                                 <div>
-                                    @{                                        
-                                        foreach (string day in week)
+                                    @{
+                                        foreach(KeyValuePair<string,Hour[]> dayInfo in data)
                                         {
-                                            object ob = data[day.Substring(0,3)];
-                                            <p>@ob.ToString()</p>
+                                            if(dayInfo.Key != "Not Found")
+                                            {
+                                                <h3>@dayInfo.Key has a forecast of: </h3>
+                                                foreach (Hour time in dayInfo.Value)
+                                                {
+                                                    <p>At @time.Time - Wave Power: @time.WavePower kJ, Wave Height of @time.WaveHeight m</p>
+                                                }
+                                            }
+
                                         }
+                                            //foreach (string day in week)
+                                        //{
+                                        //    object ob = data[day.Substring(0,3)];
+                                        //    <p>@ob.ToString()</p>
+                                        //}
                                     }
                                         </div>
                                 <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>

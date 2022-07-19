@@ -8,16 +8,16 @@ using System.Text.Json;
 namespace FishingTrip.Pages.Shared
 {
     public class _Common
-    {      
+    {
         public static string[] nextDays(int num)
         {
             string[] days = new string[num];
             DateTime curDay = DateTime.Today;
-            DayOfWeek dayOfWeek = curDay.DayOfWeek;            
-            
+            DayOfWeek dayOfWeek = curDay.DayOfWeek;
+
             days[0] = dayOfWeek.ToString();
             //fills array with the following days of a specified length
-            for(int i = 1; i < days.Length; i++)
+            for (int i = 1; i < days.Length; i++)
             {
                 DayOfWeek followingDay = curDay.AddDays(i).DayOfWeek;
                 days[i] = followingDay.ToString();
@@ -26,7 +26,11 @@ namespace FishingTrip.Pages.Shared
         }
         private static SqlConnection dbConnect()
         {
-            string MyConnectionString = "Insert server details here";
+<<<<<<< HEAD
+            string MyConnectionString = _ServerConnections.main;
+=======
+            string MyConnectionString = "Server details";
+>>>>>>> 05444ac4009cedc1440bcbd2767269e58b7151ad
             SqlDataReader rdr = null;
             SqlConnection cnn;
             cnn = new SqlConnection(MyConnectionString);
@@ -36,25 +40,25 @@ namespace FishingTrip.Pages.Shared
                 cnn.Open();
                 return cnn;
             } catch
-                {
+            {
                 Console.WriteLine("Failed to connect to database");
                 return null;
-                }
-
-
             }
 
-        private static void closeDB(SqlConnection cnn,SqlDataReader rdr)
+
+        }
+
+        private static void closeDB(SqlConnection cnn, SqlDataReader rdr)
+        {
+            if (rdr != null)
             {
-                if (rdr != null)
-                {
-                    rdr.Close();
-                }
-                if (cnn != null)
-                {
-                    cnn.Close();
-                }                
+                rdr.Close();
             }
+            if (cnn != null)
+            {
+                cnn.Close();
+            }
+        }
         private static void dbExecute(string command)
         {
             SqlConnection cnn = dbConnect();
@@ -70,6 +74,7 @@ namespace FishingTrip.Pages.Shared
         }
         public class Hour
         {
+            public string Time { get; set; }
             public string Rain { get; set; }
             public string Sunset { get; set; }
             public string Sunrise { get; set; }
@@ -81,13 +86,72 @@ namespace FishingTrip.Pages.Shared
             public string Temperature { get; set; }
             public string WaveHeight { get; set; }
             public string WaveDirection { get; set; }
-            public string WSW { get; set; }
             public string Winddirection { get; set; }
+        }
+
+        public class Day
+        {
+            public string name { get; set; }
+
+        }
+
+        public static Dictionary<string, Hour[]> getDayInfo(JsonDocument json)
+        {
+            var jsonDict = new Dictionary<string, JsonDocument>();
+            jsonDict = JsonSerializer.Deserialize<Dictionary<string,JsonDocument>>(json);
+            var dailyForecast = new Dictionary<string, Hour[]>();
+
+            List<Hour> hourList = new List<Hour>();
+            //string[] properties = { "Rain", "Sunset", "Sunrise", "LowTide", "HighTide", "Chilltemp", "WavePower", "WindSpeed", "Temperature", "WaveHeight", "WaveDirection", "WSW", "Winddirection" };
+
+            foreach (KeyValuePair<string,JsonDocument> kvp in jsonDict)
+            {
+                if (kvp.Key != "Spot")
+                {
+                    //String here is the Day
+                    var hoursForDay = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>(kvp.Value);
+                    foreach (KeyValuePair<string, JsonDocument> kvp2 in hoursForDay)
+                    {
+                        //String here is the time of day, with JsonDocument being information
+                        //A new hour object is made and all the values assigned
+                        Hour newHour = new Hour();
+                        newHour.Time = kvp2.Key;
+                        newHour.Rain = kvp2.Value.RootElement.GetProperty("Rain").ToString();
+                        newHour.Sunset = kvp2.Value.RootElement.GetProperty("Sunset").ToString();
+                        newHour.Sunrise = kvp2.Value.RootElement.GetProperty("Sunrise").ToString();
+                        newHour.LowTide = kvp2.Value.RootElement.GetProperty("Low Tide").ToString();
+                        newHour.HighTide = kvp2.Value.RootElement.GetProperty("High Tide").ToString();
+                        newHour.Chilltemp = kvp2.Value.RootElement.GetProperty("Chill temp").ToString();
+                        newHour.WavePower = kvp2.Value.RootElement.GetProperty("Wave Power").ToString();
+                        newHour.WindSpeed = kvp2.Value.RootElement.GetProperty("Wind Speed").ToString();
+                        newHour.Temperature = kvp2.Value.RootElement.GetProperty("Temperature").ToString();
+                        newHour.WaveHeight = kvp2.Value.RootElement.GetProperty("Wave Height").ToString();
+                        newHour.WaveDirection = kvp2.Value.RootElement.GetProperty("Wave Direction").ToString();
+                        newHour.Winddirection = kvp2.Value.RootElement.GetProperty("Wind direction").ToString();
+                        //Add the hour to the hour list for the day
+                        hourList.Add(newHour);
+                    }
+                    //Convert the daily hours to an array
+                    Hour[] hourArray = hourList.ToArray();
+
+                    dailyForecast.Add(kvp.Key, hourArray);
+                } else
+                {
+                    Hour[] newHour = new Hour[0];
+                    dailyForecast.Add("Not Found", newHour);
+                }
+            }    
+            
+            return dailyForecast;
         }
 
         public static Dictionary<string, Hour[]> getFavConditions(string spot, string[] days)
         {
-            string MyConnectionString = "Insert server details here";
+<<<<<<< HEAD
+            string MyConnectionString = _ServerConnections.linux;
+=======
+            string MyConnectionString = "Server details";
+>>>>>>> 05444ac4009cedc1440bcbd2767269e58b7151ad
             SqlDataReader rdr = null;
             SqlConnection cnn =new SqlConnection();
             cnn = new SqlConnection(MyConnectionString);
@@ -104,8 +168,7 @@ namespace FishingTrip.Pages.Shared
             
             cmd.Parameters.AddWithValue("@spot", spot);
 
-            var working = new Dictionary<string, JsonDocument>();
-            var work = new Dictionary<string, object>();
+            var dayInfo = new Dictionary<string, Hour[]>();
 
             if (cnn != null && cnn.State == ConnectionState.Closed)
             {
@@ -115,29 +178,36 @@ namespace FishingTrip.Pages.Shared
                 {
                     while(rdr.Read())
                     {
+                        
                         JsonDocument json = JsonDocument.Parse(rdr.GetString(0));
-                        working = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>(json);
+                        dayInfo = getDayInfo(json);
                     }
                 }
             }
             
-            Hour[] theDay = new Hour[working.Count()];
-            var dict = new Dictionary<string, Hour[]>();
+            //Hour[] theDay = new Hour[working.Count()];
+            //var dict = new Dictionary<string, Hour[]>();
 
+<<<<<<< HEAD
+            //foreach(KeyValuePair<string,JsonDocument> kvp in working)
+            //{
+            //    work.Add(kvp.Key,JsonSerializer.Deserialize<Dictionary<string, object>>(kvp.Value));
+=======
             foreach(KeyValuePair<string,JsonDocument> kvp in working)
             {
-                work.Add(kvp.Key,JsonSerializer.Deserialize<Dictionary<string, object>>(json));
+                work.Add(kvp.Key,JsonSerializer.Deserialize<Dictionary<string, object>>(kvp.Value));
             }
+>>>>>>> 05444ac4009cedc1440bcbd2767269e58b7151ad
 
-            foreach(Hour hour in theDay)
-            {
+            //}
 
-            }
+            //foreach(Hour hour in theDay)
+            //{
 
-
+            //}
 
             closeDB(cnn, rdr);
-            return dict;
+            return dayInfo;
         }
 
         private static void setFavConditions()

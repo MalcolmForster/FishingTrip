@@ -44,12 +44,7 @@ mssqlDB = connMSSql()
 mysqlDBData = tablesData(mysqlDB)
 
 # Second step is to find all favourited fishing spots from all users on from the fishr database
-fishr = mysql.connector.connect(
-    host='192.168.86.24',
-    user='fishr',
-    password='fishr123',
-    database='fishr'
-)
+fishr = mysql.connector.connect("Insert server detailes here for a mysql server")
 
 cursor = fishr.cursor()
 query = 'SELECT favspots FROM users'

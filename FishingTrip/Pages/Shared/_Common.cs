@@ -26,7 +26,7 @@ namespace FishingTrip.Pages.Shared
         }
         private static SqlConnection dbConnect()
         {
-            string MyConnectionString = "Insert server details here";
+            string MyConnectionString = "Server details";
             SqlDataReader rdr = null;
             SqlConnection cnn;
             cnn = new SqlConnection(MyConnectionString);
@@ -87,7 +87,7 @@ namespace FishingTrip.Pages.Shared
 
         public static Dictionary<string, Hour[]> getFavConditions(string spot, string[] days)
         {
-            string MyConnectionString = "Insert server details here";
+            string MyConnectionString = "Server details";
             SqlDataReader rdr = null;
             SqlConnection cnn =new SqlConnection();
             cnn = new SqlConnection(MyConnectionString);
@@ -126,7 +126,7 @@ namespace FishingTrip.Pages.Shared
 
             foreach(KeyValuePair<string,JsonDocument> kvp in working)
             {
-                work.Add(kvp.Key,JsonSerializer.Deserialize<Dictionary<string, object>>(json));
+                work.Add(kvp.Key,JsonSerializer.Deserialize<Dictionary<string, object>>(kvp.Value));
             }
 
             foreach(Hour hour in theDay)

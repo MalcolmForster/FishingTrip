@@ -42,6 +42,8 @@ h2 {
 }
 
 h3 {
+    margin-top: 10px;
+    margin-bottom:2px;
     font-size: 15px;
     font-style: italic;
 }
@@ -78,8 +80,9 @@ select {
 }
 
     .favSpotList li {
+        padding:10px;
         margin: 10px;
-        height: 100px;
+        height: auto;
         width: 100%;
         border-radius: 10px;
         border: 10px;
@@ -164,3 +167,23 @@ select {
 }
 
 /*end of loading animation*/
+
+.forecastDiv {
+    background-color: dimgray;
+    border-radius:5px;
+    margin:5px;
+    padding:10px;
+}
+
+.forecastTable {
+    width: 100%;
+    table-layout: fixed;
+}
+
+    .forecastTable th {
+        font-size: 15px;
+    }
+
+    .forecastTable td {
+        font-size: 13px;
+    }

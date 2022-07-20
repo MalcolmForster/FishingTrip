@@ -24,13 +24,10 @@ namespace FishingTrip.Pages.Shared
             }
             return days;
         }
+
         private static SqlConnection dbConnect()
         {
-<<<<<<< HEAD
             string MyConnectionString = _ServerConnections.main;
-=======
-            string MyConnectionString = "Server details";
->>>>>>> 05444ac4009cedc1440bcbd2767269e58b7151ad
             SqlDataReader rdr = null;
             SqlConnection cnn;
             cnn = new SqlConnection(MyConnectionString);
@@ -44,8 +41,6 @@ namespace FishingTrip.Pages.Shared
                 Console.WriteLine("Failed to connect to database");
                 return null;
             }
-
-
         }
 
         private static void closeDB(SqlConnection cnn, SqlDataReader rdr)
@@ -89,12 +84,6 @@ namespace FishingTrip.Pages.Shared
             public string Winddirection { get; set; }
         }
 
-        public class Day
-        {
-            public string name { get; set; }
-
-        }
-
         public static Dictionary<string, Hour[]> getDayInfo(JsonDocument json)
         {
             var jsonDict = new Dictionary<string, JsonDocument>();
@@ -110,6 +99,7 @@ namespace FishingTrip.Pages.Shared
                 {
                     //String here is the Day
                     var hoursForDay = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>(kvp.Value);
+                    hourList.Clear();
                     foreach (KeyValuePair<string, JsonDocument> kvp2 in hoursForDay)
                     {
                         //String here is the time of day, with JsonDocument being information
@@ -133,25 +123,19 @@ namespace FishingTrip.Pages.Shared
                     }
                     //Convert the daily hours to an array
                     Hour[] hourArray = hourList.ToArray();
-
                     dailyForecast.Add(kvp.Key, hourArray);
-                } else
-                {
+                } else {
                     Hour[] newHour = new Hour[0];
                     dailyForecast.Add("Not Found", newHour);
                 }
-            }    
-            
+            }            
             return dailyForecast;
         }
 
         public static Dictionary<string, Hour[]> getFavConditions(string spot, string[] days)
         {
-<<<<<<< HEAD
             string MyConnectionString = _ServerConnections.linux;
-=======
-            string MyConnectionString = "Server details";
->>>>>>> 05444ac4009cedc1440bcbd2767269e58b7151ad
+
             SqlDataReader rdr = null;
             SqlConnection cnn =new SqlConnection();
             cnn = new SqlConnection(MyConnectionString);
@@ -185,40 +169,13 @@ namespace FishingTrip.Pages.Shared
                 }
             }
             
-            //Hour[] theDay = new Hour[working.Count()];
-            //var dict = new Dictionary<string, Hour[]>();
-
-<<<<<<< HEAD
-            //foreach(KeyValuePair<string,JsonDocument> kvp in working)
-            //{
-            //    work.Add(kvp.Key,JsonSerializer.Deserialize<Dictionary<string, object>>(kvp.Value));
-=======
-            foreach(KeyValuePair<string,JsonDocument> kvp in working)
-            {
-                work.Add(kvp.Key,JsonSerializer.Deserialize<Dictionary<string, object>>(kvp.Value));
-            }
->>>>>>> 05444ac4009cedc1440bcbd2767269e58b7151ad
-
-            //}
-
-            //foreach(Hour hour in theDay)
-            //{
-
-            //}
-
             closeDB(cnn, rdr);
             return dayInfo;
-        }
-
-        private static void setFavConditions()
-        {
-
         }
 
         public static string[] getCheckedDays()
         {
             string[] s = new string[1];
-
             return s;
         }
 

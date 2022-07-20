@@ -8,7 +8,6 @@ namespace FishingTrip.Pages
 {
     public class IndexModel : PageModel
     {
-
         private readonly ILogger<IndexModel> _logger;
 
         public IndexModel(ILogger<IndexModel> logger)
@@ -37,16 +36,7 @@ namespace FishingTrip.Pages
                 string user = User.Claims.ElementAtOrDefault(0).Value;
                 remove_Favourite(favSpot, user);
             }
-            //else
-            //{
-            //    string chkSpot = Request.Form["spot"];
-            //    string cmd = ;
-            //    string args;
-            //}
 
         }
-
-
-
     }
 }

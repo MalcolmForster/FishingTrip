@@ -10,6 +10,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
+<body onload="indexLoad()">
     <div class="text-center">
         <h1 class="display-4">FishingTrip</h1>
         <h2>For planning and tracking all of you fishing trips</h2>
@@ -17,100 +18,159 @@
         @*    Ideas as follows:
         Weather forecast for favourite spots
         See recent posts/fishing trips of friends and self*@
-        
+
         @if (SignInManager.IsSignedIn(User))
         {
             string[] week = nextDays(7);
-        //remove_Favourite("Test");
-        <h1>Recent Posts and fishing trips from friends</h1>
-        <p>
-            Creating a method to collect a certain number of posts from the database from friends and own user
-            This could be harder to do because of the multiple database
-            Use a combine function to add them all together?
-        </p>
-        <p>Insert recent friend posts here</p>
-        //Find method to be able to find friends and then add there most recent posts similar to the old PHP style site
+            //remove_Favourite("Test");
+            <h1>Recent Posts and fishing trips from friends</h1>
+            <p>
+                Creating a method to collect a certain number of posts from the database from friends and own user
+                This could be harder to do because of the multiple database
+                Use a combine function to add them all together?
+            </p>
+            <p>Insert recent friend posts here</p>
+            //Find method to be able to find friends and then add there most recent posts similar to the old PHP style site
 
 
-        <h1>Favourite fishing locations - Quick view</h1>
-        <label>This weeks conditions at your favourite fishing spots</label>
-        <form id="checkDays" action="~/" method="post">
-            <label>Days to compare: </label>
-            <ul class="favSpotList">
-                @{
-                    //string[] week = nextDays(7);
-
-                    for (int i = 0; i < week.Length; i++)
-                    {
-                        if (week[i] != "")
+            <h1>Favourite fishing locations - Quick view</h1>
+            <label>This weeks conditions at your favourite fishing spots</label>
+            <form id="checkDays" action="~/" method="post">
+                <label>Days to compare: </label>
+                <ul class="favSpotList">
+                    @{
+                        //string[] week = nextDays(7);
+                        for (int i = 0; i < week.Length; i++)
                         {
-                                <label>@week[i]:</label>
-                                <input type="checkbox" action="~/" name="dayChk" value=@week[i] checked />
+                            if (week[i] != "")
+                            {
+                                            <label>@week[i]:</label>
+                                if(i<3)
+                                {
+                                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] checked />
+                                } else
+                                {
+                                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i]/>
+                                }
+
+                            }
                         }
                     }
-                }
-            </ul>
-            <input type="submit" value="Show for selected Days" width="200"/>
-        </form>
-        <form id="checkSpot" action="~/" method="post">
-            <ul class="favSpotList">
-                @{
-                    // this may need to change from a list. What I am aiming to do is have the conditions shown for the users favourite spots for easy comparison. This will require a loading animation while the server recieves and redirects the fishing spots forecast. This information is all passed with a JSON file for each day, for each spot, perhaps should limit to 3 spots initially.
-                    string[] favSpots = getFavSpots(User.Claims.ElementAtOrDefault(0).Value);
-                    foreach (string spot in favSpots)
-                    {
-                        if (spot != "")
+                </ul>
+            </form>
+            <form id="checkSpot" action="~/" method="post">
+                <ul class="favSpotList">
+                    @{
+                        // this may need to change from a list. What I am aiming to do is have the conditions shown for the users favourite spots for easy comparison. This will require a loading animation while the server recieves and redirects the fishing spots forecast. This information is all passed with a JSON file for each day, for each spot, perhaps should limit to 3 spots initially.
+                        string[] favSpots = getFavSpots(User.Claims.ElementAtOrDefault(0).Value);
+                        foreach (string spot in favSpots)
                         {
-                            Dictionary<string, Hour[]> data = getFavConditions(spot, week);
-                            //string[] checkedDays = getCheckedDays();
-                                <li name=@spot.Replace(" ","_")>
-                                <h3>@spot</h3>
-                                <div>
-                                    @{
-                                        foreach(KeyValuePair<string,Hour[]> dayInfo in data)
-                                        {
-                                            if(dayInfo.Key != "Not Found")
+                            if (spot != "")
+                            {
+                                Dictionary<string, Hour[]> data = getFavConditions(spot, week);
+                                //string[] checkedDays = getCheckedDays();
+                                        <li name=@spot.Replace(" ","_")>
+                                    <h2>@spot</h2>
+                                    <div name="dayForecastDetails">
+                                        @{
+                                            foreach (KeyValuePair<string, Hour[]> dayInfo in data)
                                             {
-                                                <h3>@dayInfo.Key has a forecast of: </h3>
-                                                foreach (Hour time in dayInfo.Value)
+                                                if (dayInfo.Key != "Not Found")
                                                 {
-                                                    <p>At @time.Time - Wave Power: @time.WavePower kJ, Wave Height of @time.WaveHeight m</p>
+                                                    <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
+                                                        <h2 style="display: inline-block;">@dayInfo.Key ---</h2>
+                                                        <label>
+                                                            Low tides:
+                                                            @foreach (Hour time in dayInfo.Value)
+                                                            {
+                                                                if (@time.LowTide != "")
+                                                                {
+                                                                    @string.Concat(time.LowTide," ")
+                                                                }
+                                                            }
+
+                                                        </label>
+
+                                                        <label>
+                                                            , High tides:
+                                                            @foreach (Hour time in dayInfo.Value)
+                                                            {
+                                                                if (@time.HighTide != "")
+                                                                {
+                                                                    @string.Concat(time.HighTide," ")
+                                                                }
+                                                            }
+                                                        </label>
+
+                                                        <table class="forecastTable">
+                                                            <tr>
+                                                                <th></th>
+                                                                <th>0 AM</th>
+                                                                <th>3 AM</th>
+                                                                <th>6 AM</th>
+                                                                <th>9 AM</th>
+                                                                <th>12 PM</th>
+                                                                <th>3 PM</th>
+                                                                <th>6 PM</th>
+                                                                <th>9 PM</th>
+                                                            </tr>
+
+                                                            @{
+                                                                for (int i = 0; i < 9 - dayInfo.Value.Count(); i++)
+                                                                {
+                                                                    if (i == 0)
+                                                                    {
+                                                                        <td>Wave Power:<br />Wave Height:</td>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <td>---------<br />--------</td>
+                                                                    }
+
+                                                                }
+                                                                foreach (Hour time in dayInfo.Value)
+                                                                {
+                                                                    <td>@time.WavePower kJ<br>@time.WaveHeight m</td>
+                                                                }
+                                                            }
+
+                                                        </table>
+                                                    </div>
+
+                                                }
+                                                else
+                                                {
+                                                    <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
                                                 }
                                             }
-
                                         }
-                                            //foreach (string day in week)
-                                        //{
-                                        //    object ob = data[day.Substring(0,3)];
-                                        //    <p>@ob.ToString()</p>
-                                        //}
-                                    }
-                                        </div>
-                                <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                                    </div>
                                 </li>
+                            }
                         }
                     }
-                }
-            </ul>
-        </form>
+                </ul>
+            </form>
 
-        <form id="addFav" action="~/" method="post">
-            <label>Add favourite fishing spot</label>
-            <input type="text" name="favSpot" width="50" value="" />
-            <input type="hidden" name="addFavourite" value="true" />
-            <input type="submit" value="Add favourite" />
-        </form>
-        <form id="rmvFav" action="~/" method="post">
-            <label>Remove a favourite fishing spot</label>
-            <input type="text" name="rmvSpot" width="50" value="" />
-            <input type="hidden" name="rmvFavourite" value="true" />
-            <input type="submit" value="Remove favourite" />
-        </form>
+            <form id="addFav" action="~/" method="post">
+                <label>Add favourite fishing spot</label>
+                <input type="text" name="favSpot" width="50" value="" />
+                <input type="hidden" name="addFavourite" value="true" />
+                <input type="submit" value="Add favourite" />
+            </form>
+            <form id="rmvFav" action="~/" method="post">
+                <label>Remove a favourite fishing spot</label>
+                <input type="text" name="rmvSpot" width="50" value="" />
+                <input type="hidden" name="rmvFavourite" value="true" />
+                <input type="submit" value="Remove favourite" />
+            </form>
 
-    }
+        }
         else
         {
-            <h2>For tracking all of your fishing data</h2><br></br>
+            <h2>For tracking all of your fishing data</h2>
+
+            <br></br>
             <h3>What this application is capable of:</h3>
             <ul>
                 <li class="list">Returns weather and wave information for you favourite fishing locations</li>
@@ -119,5 +179,8 @@
             </ul>
         }
     </div>
+
+</body>
+
 </html>
 

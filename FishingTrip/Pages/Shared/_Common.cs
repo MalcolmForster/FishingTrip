@@ -26,11 +26,8 @@ namespace FishingTrip.Pages.Shared
         }
         private static SqlConnection dbConnect()
         {
-<<<<<<< HEAD
+
             string MyConnectionString = _ServerConnections.main;
-=======
-            string MyConnectionString = "Server details";
->>>>>>> 05444ac4009cedc1440bcbd2767269e58b7151ad
             SqlDataReader rdr = null;
             SqlConnection cnn;
             cnn = new SqlConnection(MyConnectionString);
@@ -147,11 +144,8 @@ namespace FishingTrip.Pages.Shared
 
         public static Dictionary<string, Hour[]> getFavConditions(string spot, string[] days)
         {
-<<<<<<< HEAD
             string MyConnectionString = _ServerConnections.linux;
-=======
-            string MyConnectionString = "Server details";
->>>>>>> 05444ac4009cedc1440bcbd2767269e58b7151ad
+
             SqlDataReader rdr = null;
             SqlConnection cnn =new SqlConnection();
             cnn = new SqlConnection(MyConnectionString);
@@ -185,27 +179,6 @@ namespace FishingTrip.Pages.Shared
                 }
             }
             
-            //Hour[] theDay = new Hour[working.Count()];
-            //var dict = new Dictionary<string, Hour[]>();
-
-<<<<<<< HEAD
-            //foreach(KeyValuePair<string,JsonDocument> kvp in working)
-            //{
-            //    work.Add(kvp.Key,JsonSerializer.Deserialize<Dictionary<string, object>>(kvp.Value));
-=======
-            foreach(KeyValuePair<string,JsonDocument> kvp in working)
-            {
-                work.Add(kvp.Key,JsonSerializer.Deserialize<Dictionary<string, object>>(kvp.Value));
-            }
->>>>>>> 05444ac4009cedc1440bcbd2767269e58b7151ad
-
-            //}
-
-            //foreach(Hour hour in theDay)
-            //{
-
-            //}
-
             closeDB(cnn, rdr);
             return dayInfo;
         }

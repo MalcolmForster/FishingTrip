@@ -2,6 +2,7 @@ from calendar import week
 import mysql.connector
 import pyodbc
 import FSEngine
+import FSConnections
 import json
 import sys
 
@@ -14,15 +15,23 @@ from datetime import date
 
 request = sys.argv[1] # Request is either from backup server or from user to get data
 #^^^^^^^^^^^^^^ change this to a method provided by website^^^^^^^^^^^^^^^^^^^
-
-def connData():    
-
-    fishrDB = mysql.connector.connect("Insert server detailes here for a mysql server")    
+def connData():
+    fishrDB = mysql.connector.connect(
+        **FSConnections.fishrDBMysqlLinux
+    )    
     return fishrDB
 
-
 def connMSSql():
-    conn = pyodbc.connect("Insert server details here for a sql server")
+    try:
+        #Try connect from linux machine
+        conn = pyodbc.connect(
+            FSConnections.FishingTripSQLLinux            
+            )
+    except:
+        #Else try from windows machine
+        conn = pyodbc.connect(
+            FSConnections.FishingTripSQLWindows
+            )
     return conn
 
 def tablesData(database):
@@ -44,10 +53,12 @@ mssqlDB = connMSSql()
 mysqlDBData = tablesData(mysqlDB)
 
 # Second step is to find all favourited fishing spots from all users on from the fishr database
-fishr = mysql.connector.connect("Insert server detailes here for a mysql server")
+fishr = mysql.connector.connect(
+    **FSConnections.fishrMysqlLinux
+)
 
 cursor = fishr.cursor()
-query = 'SELECT favspots FROM users'
+query = 'SELECT favspots FROM users' #_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_Need to adjust this to get favourites from the new database
 cursor.execute(query)
 addToDb = []
 currFavs = []
@@ -71,46 +82,68 @@ cursor = mysqlDB.cursor()
 
 if len(addToDb) > 0:
     for table in addToDb:      
-        cursor.execute("""CREATE TABLE `%s` (`id` int(11) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT, `date_time` datetime NOT NULL, `dataSF` JSON NOT NULL)"""% (table,))
+        cursor.execute("""CREATE TABLE `%s` (`id` int(11) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT, `date_time` datetime NOT NULL, `dataSF` JSON, `dataT4F` JSON)"""% (table,))
         print("Created: "+ table)
 
 cursor.close()
-
 
 # Now use the FSEngine for each table to fill in the data required. This is imported above.
 # Will pass each fishingspot to FSengine, find the current times information and saves into the correct column as a JSON.
 
 if request == "backup":
     for spot in currFavs:
+        date = datetime.now()
+        hour = (date.strftime('%H') + " h")
+        day = (datetime.today().strftime('%A'))[0:3]
+
+        dt_string = date.strftime('%Y-%m-%d %H:%M:%S')
         FSResults = json.dumps(FSEngine.surfForecast("next",spot))
-        if json.loads(FSResults):
-            cursor = mysqlDB.cursor()
-            date = datetime.now() 
-            dt_string = date.strftime('%Y-%m-%d %H:%M:%S')
-            #print("INSERT INTO `%s` (`date_time`, `dataSF`) VALUES ('%s', '%s')"% (spot, dt_string, FSResults))
-            try:
-                cursor.execute("INSERT INTO `%s` (`date_time`, `dataSF`) VALUES ('%s', '%s')"% (spot, dt_string, FSResults))
-                print("Added '%s' weather information"% (spot,))
-            except:
-                print("Failed to add json information for '%s'"% (spot,))
-            cursor.close()
-        else:
-            print ("Not in json format for '%s'"% (spot,))
+
+        T4FBulk = FSEngine.tides4fishing(spot)
+        for surf in T4FBulk[day]["Surf Forecast"]:
+            if hour in surf[0:len(hour)]:
+                T4FhourData=surf
+                break
+        T4FBulk[day]["Surf Forecast"] = T4FhourData
+        T4FResults = json.dumps(T4FBulk[day])
+
+        if json.loads(FSResults) == False:
+            FSResults=json.dumps({"Spot not found":"On SurfForecast"})
+        
+        if json.loads(T4FResults) == False:
+            T4FResults=json.dumps({"Spot not found":"On Tides4Fishing"}) 
+
+        cursor = mysqlDB.cursor()
+        try:
+            cursor.execute("INSERT INTO `%s` (`date_time`, `dataSF`, `dataT4F`) VALUES ('%s', '%s', '%s')"% (spot, dt_string, FSResults, T4FResults))
+            print("Added '%s' weather information"% (spot,))
+        except:
+            print("Failed to add json information for '%s'"% (spot,))
+        cursor.close()
+
 elif request == "request":
     days = sys.argv
     spot = days[2]
-    reqRet = []
+    reqRetFS = []
+    reqRetT4F =[]
     del days[0:3]   
     # for spot in currFavs:
         #print(spot)
     for day in days:          
         FSResults = json.dumps(FSEngine.surfForecast(day,spot))
         if FSResults == 0:
-            print("No data found for this spot on site")
+            print("No data found for this spot on Surf-forecast")
             break
-        reqRet.append([day,FSResults])
+        reqRetFS.append([day,FSResults])
+    
+    for day in days:
+        T4FResults = json.dumps((FSEngine.tides4fishing(spot))[day])
+        reqRetT4F.append([day,T4FResults])    
 
-    print(reqRet)
+    #break #<-------------------------------------------------BREAK ON THIS LINE IS FOR TESTING ONLY, LIMITS TO ONE FISHING SPOT!------------------------------------------------
+    print(reqRetFS)
+    print(reqRetT4F)
+
 elif request == "update":
     today = date.today()
     day = today.strftime("%a")
@@ -118,23 +151,33 @@ elif request == "update":
     reqRet = []
     
     cursor = mysqlDB.cursor()
-    cursor.execute('TRUNCATE favForecasts')
+    cursor.execute('TRUNCATE favForecastsSF')
     cursor.close()
 
     sqlCursor = mssqlDB.cursor()
-    sqlCursor.execute('TRUNCATE TABLE favForecasts')
+    sqlCursor.execute('TRUNCATE TABLE favForecastsSF')
     sqlCursor.close()
-        
+
+    cursor = mysqlDB.cursor()
+    cursor.execute('TRUNCATE favForecastsT4F')
+    cursor.close()
+
+    sqlCursor = mssqlDB.cursor()
+    sqlCursor.execute('TRUNCATE TABLE favForecastsT4F')
+    sqlCursor.close()
+
     for i in range(6):
         today = today + timedelta(days = 1)
         weekFromToday.append(today.strftime("%a"))
 
     for spot in currFavs:
+        #_______________________Uploads SurfForecast records to database____________________________
+
         reqRetSql = "{'Spot':'Not Found'}"
-        print("Looking for "+spot)
-        data_soup = FSEngine.SF_browser(spot)        
+        print("Looking for "+spot+ " on SurfForecast")
+        data_soup = FSEngine.SF_browser(spot) 
         if data_soup != 0:
-            print("Found "+spot)
+            print("Found "+spot+ " on SurfForecast")
             #weekFromToday = ["Thu"] #<---------- for quick testing, don't need to run through entire week
             reqRetMySql="{"
             for day in weekFromToday:   
@@ -149,15 +192,39 @@ elif request == "update":
                 reqRetMySql = (reqRetMySql+"\""+day+"\":"+FSResults)
             reqRetMySql = reqRetMySql + "}"
         else:
-            reqRetMySql = "{\"Spot\":\"Not Found\"}"
-            #reqRetSql = "{'Spot':'Not Found'}"
+            reqRetMySql = "{\"Spot\":\"Not found on Surf-forecast\"}"
         date = datetime.now()
         
         dt_string = date.strftime('%Y-%m-%d %H:%M:%S')
         cursor = mysqlDB.cursor()
         sqlCursor = mssqlDB.cursor()
-        cursor.execute("""INSERT INTO favForecasts (`spot`,`date_time`, `dataSF`) VALUES ('%s', '%s','%s')"""% (spot,dt_string, reqRetMySql))
-        sqlCursor.execute("""INSERT INTO favForecasts (spot,date_time, dataSF) VALUES ('%s', '%s','%s')"""% (spot,dt_string, reqRetMySql))
+        cursor.execute("""INSERT INTO favForecastsSF (`spot`,`date_time`, `dataSF`) VALUES ('%s', '%s','%s')"""% (spot,dt_string, reqRetMySql))
+        sqlCursor.execute("""INSERT INTO favForecastsSF (spot,date_time, dataSF) VALUES ('%s', '%s','%s')"""% (spot,dt_string, reqRetMySql))
+        cursor.close()
+        sqlCursor.close()
+
+        #_______________________Uploads Tides4Fishing records to database____________________________
+
+        reqRetSql = "{'Spot':'Not Found'}"
+        print("Looking for "+spot +" on Tides4Fishing")
+        dicT4F = FSEngine.tides4fishing(spot) 
+        if dicT4F != 0:
+            print("Found "+spot+" on Tides4Fishing")
+            for day in weekFromToday:   
+                FSResults = json.dumps(dicT4F)
+                if FSResults == 0:
+                    print("No data found for this spot on site")
+                    break
+                reqRetMySql = FSResults
+        else:
+            reqRetMySql = "{\"Spot\":\"Not found on Tides4Fishing\"}"
+        date = datetime.now()
+        
+        dt_string = date.strftime('%Y-%m-%d %H:%M:%S')
+        cursor = mysqlDB.cursor()
+        sqlCursor = mssqlDB.cursor()
+        cursor.execute("""INSERT INTO favForecastsT4F (`spot`,`date_time`, `dataSF`) VALUES ('%s', '%s','%s')"""% (spot,dt_string, reqRetMySql))
+        sqlCursor.execute("""INSERT INTO favForecastsT4F (spot,date_time, dataSF) VALUES ('%s', '%s','%s')"""% (spot,dt_string, reqRetMySql))
         cursor.close()
         sqlCursor.close()
 else:

@@ -1,6 +1,7 @@
 ﻿@page
 @using Microsoft.AspNetCore.Identity
 @using static FishingTrip.Pages.Shared._Common;
+@using FishingTrip.Pages.Shared;
 @model IndexModel
 @inject SignInManager<IdentityUser> SignInManager;
 
@@ -32,7 +33,6 @@
             <p>Insert recent friend posts here</p>
             //Find method to be able to find friends and then add there most recent posts similar to the old PHP style site
 
-
             <h1>Favourite fishing locations - Quick view</h1>
             <label>This weeks conditions at your favourite fishing spots</label>
             <form id="checkDays" action="~/" method="post">
@@ -40,19 +40,19 @@
                 <ul class="favSpotList">
                     @{
                         //string[] week = nextDays(7);
-                        for (int i = 0; i < week.Length; i++)
+                        for (int i = 0; i <week.Length; i++)
                         {
                             if (week[i] != "")
                             {
                                             <label>@week[i]:</label>
-                                if(i<3)
+                                if (i <3)
                                 {
                                                 <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] checked />
-                                } else
-                                {
-                                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i]/>
                                 }
-
+                                else
+                                {
+                                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] />
+                                }
                             }
                         }
                     }
@@ -69,74 +69,40 @@
                             {
                                 Dictionary<string, Hour[]> data = getFavConditions(spot, week);
                                 //string[] checkedDays = getCheckedDays();
-                                        <li name=@spot.Replace(" ","_")>
-                                    <h2>@spot</h2>
-                                    <div name="dayForecastDetails">
-                                        @{
+                                            <li name=@spot.Replace(" ","_")>
+                                                <h2>@spot</h2>
+                                                <div name="dayForecastDetails">
+                                                    @{
                                             foreach (KeyValuePair<string, Hour[]> dayInfo in data)
                                             {
                                                 if (dayInfo.Key != "Not Found")
                                                 {
                                                     <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
-                                                        <h2 style="display: inline-block;">@dayInfo.Key ---</h2>
-                                                        <label>
-                                                            Low tides:
-                                                            @foreach (Hour time in dayInfo.Value)
-                                                            {
-                                                                if (@time.LowTide != "")
-                                                                {
-                                                                    @string.Concat(time.LowTide," ")
-                                                                }
-                                                            }
+                                                        @{
+                                                            ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
 
-                                                        </label>
-
-                                                        <label>
-                                                            , High tides:
-                                                            @foreach (Hour time in dayInfo.Value)
-                                                            {
-                                                                if (@time.HighTide != "")
-                                                                {
-                                                                    @string.Concat(time.HighTide," ")
-                                                                }
-                                                            }
-                                                        </label>
-
-                                                        <table class="forecastTable">
-                                                            <tr>
-                                                                <th></th>
-                                                                <th>0 AM</th>
-                                                                <th>3 AM</th>
-                                                                <th>6 AM</th>
-                                                                <th>9 AM</th>
-                                                                <th>12 PM</th>
-                                                                <th>3 PM</th>
-                                                                <th>6 PM</th>
-                                                                <th>9 PM</th>
-                                                            </tr>
-
-                                                            @{
-                                                                for (int i = 0; i < 9 - dayInfo.Value.Count(); i++)
-                                                                {
-                                                                    if (i == 0)
+                                                            <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
+                                                            <label>
+                                                                Low tides: @forecastDiv.lowTides
+                                                            </label>
+                                                            <label>
+                                                                , High tides: @forecastDiv.highTides
+                                                            </label>
+                                                            <label>
+                                                                , Sea Temperature: @forecastDiv.waterTemp
+                                                            </label>
+                                                            <table class="forecastTable">
+                                                                <tr>
+                                                                    <th></th>
+                                                                    @foreach (string time in ForecastFormat.displayTimes)
                                                                     {
-                                                                        <td>Wave Power:<br />Wave Height:</td>
+                                                                        <th>@time</th>
                                                                     }
-                                                                    else
-                                                                    {
-                                                                        <td>---------<br />--------</td>
-                                                                    }
-
-                                                                }
-                                                                foreach (Hour time in dayInfo.Value)
-                                                                {
-                                                                    <td>@time.WavePower kJ<br>@time.WaveHeight m</td>
-                                                                }
-                                                            }
-
-                                                        </table>
+                                                                </tr>
+                                                                @foreach (string s in forecastDiv.waveInfo){<td>@s</td>}
+                                                            </table>
+                                                        }
                                                     </div>
-
                                                 }
                                                 else
                                                 {

@@ -1,6 +1,7 @@
 import mechanicalsoup
 from datetime import datetime
 
+
 #------------------------------------The following code is for SURF-FORECAST website scraping ------------------------------------------------------------------------------------------------------
 def SF_table(data_soup):
     table = data_soup.select("#forecast-table > div > table > tbody > tr.forecast-table__row.forecast-table-days")[0]
@@ -35,22 +36,20 @@ def SF_info(day, data_soup):
     z = 0
     column = []
     table = SF_table(data_soup)
-    
+
+    seaTempRaw = str(data_soup.select("#contdiv > section.break-header > div > div.break-header__content > div.break-header__temperature.break-header__temperature--tablet > b > span.temp"))
+    seaTemp = seaTempRaw.replace("<span class=\"temp\">","").replace("</span>", " C")
+
+
     if day == "next":
         column.insert(len(column), 0)
-
         now = datetime.strftime(datetime.now(), "%I %p")
         if now.startswith('0'):
-            now = now[1:]    
-        
-        # print(now)
-        
+            now = now[1:]        
         i = 2
         while i<=8:
-            #string = str(data_soup.select("#forecast-table > div > table > tbody > tr.forecast-table__row.forecast-table-time > td:nth-child(" + str(i) + ")"))
+            
             string = str(data_soup.select("#forecast-table > div > table > tbody > tr.forecast-table__row.forecast-table-time > td:nth-child(" + str(i) + ")"))
-            # document.querySelector("#forecast-table > div > table > tbody > tr:nth-child(7) > td:nth-child(4) > svg:nth-child(3) > use")
-            # document.querySelector("#forecast-table > div > table > tbody > tr:nth-child(5) > td:nth-child(4) > div > svg > text")
             string =  ((str(string).split(">")[2]).split("<")[0]).strip() + " " + ((str(string).split(">")[4]).split("<")[0]).strip()
             if string.find(now) != -1:
                 now_column = i 
@@ -60,7 +59,7 @@ def SF_info(day, data_soup):
         for item in table:
             string = str(item)
             if day in string:
-                column.insert(len(column), z)   
+                column.insert(len(column), z) 
             z += 1
             
     i = 2
@@ -201,7 +200,7 @@ def SF_info(day, data_soup):
     i = 0        
     FSResults = dict()                
     while i < resultLength:
-        FSResults[times[i]] = {"Wave Height":day_wave_height[i], "Wave Power":day_wave_power[i], "Wave Direction": day_wave_dir[i], "Low Tide":day_low_tide[i], "High Tide":day_high_tide[i], "Wind Speed":day_wind_speed[i], "Wind direction":day_wind_dir[i], "Rain":day_rain[i], "Temperature":day_temp[i], "Chill temp":day_temp_chill[i], "Sunrise":day_sunrise[i], "Sunset":day_sunset[i]}
+        FSResults[times[i]] = {"Wave Height":day_wave_height[i], "Wave Power":day_wave_power[i], "Wave Direction": day_wave_dir[i], "Low Tide":day_low_tide[i], "High Tide":day_high_tide[i], "Wind Speed":day_wind_speed[i], "Wind direction":day_wind_dir[i], "Rain":day_rain[i], "Temperature":day_temp[i], "Chill temp":day_temp_chill[i], "Sunrise":day_sunrise[i], "Sunset":day_sunset[i], "Sea Temperature":seaTemp}
         #FSResults[times[i]] = {"Wave Height":day_wave_height[i], "Wave Power":day_wave_power[i]} <--short results version for testing purposes
         i += 1
         
@@ -225,7 +224,7 @@ def surfForecast(day, location):
 
 def metService(day, location):
 
-    browser = mechanicalsoup.Browser()
+    browser = mechanicalsoup.Browser() #change to stateful broweser!?!?!?!?!?!?!?
     url = "http://www.metservice.com"
     page = browser.get(url)
     pagesoup = page.soup
@@ -250,7 +249,180 @@ def metService(day, location):
 
 # A major website for fishing information, will pull the following information off of it
 # - Temperatures (water and air), swell, tides (side and time), pressure, moon, fishability
+# - Access information by searching for fishing spot, change to weekly view, then go through all the pages for those charactistics noted above
 
+
+def t4f_browser(location):  
+   
+    #using google instead:
+    data_soup = 0
+    browser = mechanicalsoup.StatefulBrowser()
+    
+    url = "http://www.google.com"
+    browser.open(url)
+    browser.select_form('form[action="/search"]')
+    
+    browser.get_current_form()
+    searchQuery = location + " site:tides4fishing.com"
+    browser["q"]=searchQuery
+    browser.submit_selected()
+    
+    #the browser is now on a google run seach page. Here the program will look for link with text ending in 'for the next few days'
+    # document.querySelector("#___gcse_0 > div > div > div > div.gsc-wrapper > div.gsc-resultsbox-visible > div > div > div.gsc-expansionArea")
+    
+    links = browser.links()
+    for link in links:
+        s = str(link)
+        if s.__contains__(" for the next days"):
+            parts = s.split('=')
+            spotPage = (parts[2].split('&'))[0]
+            break
+
+    fishing = []
+    tides = []
+    sunrisesunset = []
+    moonrisemoonset = []
+    uvexposurelevel = []
+    weather = []
+    chancerain = []
+    temperature = []
+    humidity = []
+    visibility = []
+    atmosphericpressure = []
+    wind = []
+    surf = []
+    watertemperature = []
+
+    pages = [
+        "/fishing",
+        "/tides",
+        # "/sunrise-sunset",
+        # "/moonrise-moonset",
+        # "/uv-exposure-level",
+        # "/weather",
+        # "/chance-rain",
+        # "/temperature",
+        # "/humidity",
+        # "/visibility",
+        # "/atmospheric-pressure",
+        # "/wind",
+        "/water-temperature",
+        "/surf"
+        ]
+
+    allDays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+
+    allDataTypes = [
+        "Fish activity",
+        "TIDAL COEFFICIENT",
+        # "SUNRISE",
+        # "MOONRISE",
+        # "Ultraviolet index in",
+        # "Weather forecast in",
+        # "Chance of rain in",
+        # "Temperature in",
+        # "Humidity in",
+        # "Visibility in",
+        # "Atmospheric pressure in",
+        #"Wind forecast in",
+        "Surf forecast in",
+        "Water temperature in"]
+
+    fishActivity = ["AVERAGE","HIGH","VERY HIGH","MODERATE","LOW"]
+
+    #pages = ["/sunrise-sunset"]
+    returnDic = {}
+    try:
+        for page in pages:
+            browser.open(spotPage+page)
+            data_soup = browser.get_current_page()        
+            for i in range(1,8):
+                # fishing = []
+                lowtides = []
+                hightides =[]
+                # sunrisesunset = []
+                # moonrisemoonset = []
+                # uvexposurelevel = []
+                # weather = []
+                # chancerain = []
+                # temperature = []
+                # humidity = []
+                # visibility = []
+                # atmosphericpressure = []
+                # wind = []
+                surf = []
+                # watertemperature = []
+                daily_soup = data_soup.select("body > section > div:nth-child(4) > div.div_txt_contenido_prevision > div > div:nth-child("+str(i)+") > div")
+                daily_string = str(daily_soup)
+                for day in allDays:
+                    if(daily_string.__contains__(day)):
+                        whichDay = day[0:3]
+                for dataType in allDataTypes:
+                    if(daily_string.__contains__(dataType)):
+                        data = dataType
+                        break
+                if (data == "Fish activity" or data=="Ultraviolet index in"):
+                    for level in fishActivity:
+                        if daily_string.__contains__(level):
+                            foundResult = level
+                            returnDic[whichDay] = {"Fish Activity" : level}
+                            #print(whichDay+" has a " + data+ " of " +foundResult)
+                elif(data == "TIDAL COEFFICIENT"):
+                    #print(whichDay)
+                    high_split = daily_string.split("class=\"azul\">")
+                    high_split.pop(0)
+                    for highs in high_split:
+                        another = ((((highs.replace("<td class=\"ico\"><span class=\"icon-ficha_pleamar\"></span></td><td>","")).replace("<span class=\"prevision_unidad\">"," ")).replace("</span></td><td><span class=\"tabla_mareas_marea_altura_numero\">"," ")).replace("</span> ",""))
+                        foundResult = another.split("</span>")[0]
+                        hightides.append(foundResult)
+                    
+                    returnDic[whichDay].update({'High Tide' : hightides})
+                    #print(returnDic[whichDay])
+
+                    low_split = daily_string.split("class=\"rojo\">")
+                    low_split.pop(0)
+                    for lows in low_split:
+                        #print(lows)
+                        another = ((((lows.replace("<td class=\"ico\"><span class=\"icon-ficha_bajamar\"></span></td><td>","")).replace("<span class=\"prevision_unidad\">"," ")).replace("</span></td><td><span class=\"tabla_mareas_marea_altura_numero\">"," ")).replace("</span> ",""))
+                        foundResult = another.split("</span>")[0]
+                        lowtides.append(foundResult)                    
+                        # print((lows.replace("<td class=\"ico\"><span class=\"icon-ficha_pleamar\"></span></td><td>","")).replace("<span class=\"prevision_unidad\">"," "))
+
+                    returnDic[whichDay].update({'Low Tide' : lowtides})
+
+                elif(data == "Water temperature in"):
+                    #print(whichDay)
+                    dayTemps = (daily_string.split("class=\"f_temp_agua\">"))
+                    dayTemps.pop(0)
+                    for dayTemp in dayTemps: #do i need this for loop??
+                        foundResult = (dayTemp.split("</div></div></div>")[0])
+                    returnDic[whichDay].update({'Water Temperature' : foundResult})
+
+                elif(data == "Surf forecast in"):
+                    s = "<div class=\"f_temp_horas\"><div class=\"f_temp_hora\">"
+                    for i in range(1,25):
+                        #print(hourly)
+                        each = (daily_string.split(s))[i].split("</span></div></div></div></div>")
+                        data = (((each[0].replace("</div><div class=\"f_temp_hora\">"," ")).replace("</div><div class=\"f_temp_graf2\"><div class=\"grafico_temp_barra\"><div class=\"grafico_temp_barra_relleno graf_color_oleaje\" style=\"width"," ").replace("</span> <span class=\"prevision_unidad\">"," ")).replace("\"><span class=\"tabla_mareas_marea_altura_numero\">"," "))
+                        rmvPercent = data.split(" : ")
+                        first = rmvPercent[0]
+                        second = ((rmvPercent[1]).split("%"))[1]
+                        surf.append(first+second)
+                        #second = data.split(':')[2].split("<span class=\"tabla_mareas_marea_altura_numero\">")[0]
+                    returnDic[whichDay].update({'Surf Forecast' : surf})
+            #returnDic.append({whichDay:{"High Tides":hightides,"Low Tides":lowtides,)
+    except:
+        returnDic = 0
+    return returnDic
+        
+def tides4fishing(location):
+    dayResult = 0
+
+    fullResults = t4f_browser(location)
+    # if data_soup != 0:
+    #     dayResult = SF_info(day, data_soup)
+    # Need to add the day to the start of the JSON
+    return fullResults
 
 
 

@@ -82,6 +82,7 @@ namespace FishingTrip.Pages.Shared
             public string WaveHeight { get; set; }
             public string WaveDirection { get; set; }
             public string Winddirection { get; set; }
+            public string WaterTemperature { get; set; }
         }
 
         public static Dictionary<string, Hour[]> getDayInfo(JsonDocument json)
@@ -118,6 +119,7 @@ namespace FishingTrip.Pages.Shared
                         newHour.WaveHeight = kvp2.Value.RootElement.GetProperty("Wave Height").ToString();
                         newHour.WaveDirection = kvp2.Value.RootElement.GetProperty("Wave Direction").ToString();
                         newHour.Winddirection = kvp2.Value.RootElement.GetProperty("Wind direction").ToString();
+                        newHour.WaterTemperature = kvp2.Value.RootElement.GetProperty("Sea Temperature").ToString();
                         //Add the hour to the hour list for the day
                         hourList.Add(newHour);
                     }
@@ -139,7 +141,7 @@ namespace FishingTrip.Pages.Shared
             SqlDataReader rdr = null;
             SqlConnection cnn =new SqlConnection();
             cnn = new SqlConnection(MyConnectionString);
-            string query = ("SELECT [dataSF] FROM favForecasts WHERE [spot] = @spot");
+            string query = ("SELECT [dataSF] FROM favForecastsSF WHERE [spot] = @spot");
             SqlCommand cmd = new SqlCommand(query, cnn);
 
             try

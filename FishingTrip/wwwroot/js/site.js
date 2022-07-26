@@ -17,7 +17,6 @@ function setDays() {
 
 function toggleForecast(daysToShow) {
     const avaliableData = document.getElementsByName("forecastDiv");
-
     for (let i = 0; i < avaliableData.length; i++) {
         var s = avaliableData[i].getAttribute('id');
         if (daysToShow.includes(s)) {

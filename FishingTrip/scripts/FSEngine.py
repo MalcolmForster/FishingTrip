@@ -1,3 +1,4 @@
+from operator import concat
 import mechanicalsoup
 from datetime import datetime
 
@@ -38,7 +39,7 @@ def SF_info(day, data_soup):
     table = SF_table(data_soup)
 
     seaTempRaw = str(data_soup.select("#contdiv > section.break-header > div > div.break-header__content > div.break-header__temperature.break-header__temperature--tablet > b > span.temp"))
-    seaTemp = seaTempRaw.replace("<span class=\"temp\">","").replace("</span>", " C")
+    seaTemp = str(seaTempRaw.replace("<span class=\"temp\">","").replace("</span>", " C"))
 
 
     if day == "next":
@@ -202,8 +203,7 @@ def SF_info(day, data_soup):
     while i < resultLength:
         FSResults[times[i]] = {"Wave Height":day_wave_height[i], "Wave Power":day_wave_power[i], "Wave Direction": day_wave_dir[i], "Low Tide":day_low_tide[i], "High Tide":day_high_tide[i], "Wind Speed":day_wind_speed[i], "Wind direction":day_wind_dir[i], "Rain":day_rain[i], "Temperature":day_temp[i], "Chill temp":day_temp_chill[i], "Sunrise":day_sunrise[i], "Sunset":day_sunset[i], "Sea Temperature":seaTemp}
         #FSResults[times[i]] = {"Wave Height":day_wave_height[i], "Wave Power":day_wave_power[i]} <--short results version for testing purposes
-        i += 1
-        
+        i += 1        
     return (FSResults)
 
 def surfForecast(day, location):
@@ -311,6 +311,15 @@ def t4f_browser(location):
         ]
 
     allDays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
+    allHours = ["0 AM", "1 AM", "2 AM", "3 AM", "4 AM", "5 AM","6 AM", "7 AM", "8 AM","9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM","6 PM", "7 PM", "8 PM","9 PM", "10 PM", "11 PM"] 
+
+
+ 
+
+
+
+
+
 
     allDataTypes = [
         "Fish activity",
@@ -331,7 +340,7 @@ def t4f_browser(location):
     fishActivity = ["AVERAGE","HIGH","VERY HIGH","MODERATE","LOW"]
 
     #pages = ["/sunrise-sunset"]
-    returnDic = {}
+    rawDictonary = {}
     try:
         for page in pages:
             browser.open(spotPage+page)
@@ -365,7 +374,7 @@ def t4f_browser(location):
                     for level in fishActivity:
                         if daily_string.__contains__(level):
                             foundResult = level
-                            returnDic[whichDay] = {"Fish Activity" : level}
+                            rawDictonary[whichDay] = {"Fish Activity" : level}
                             #print(whichDay+" has a " + data+ " of " +foundResult)
                 elif(data == "TIDAL COEFFICIENT"):
                     #print(whichDay)
@@ -376,8 +385,8 @@ def t4f_browser(location):
                         foundResult = another.split("</span>")[0]
                         hightides.append(foundResult)
                     
-                    returnDic[whichDay].update({'High Tide' : hightides})
-                    #print(returnDic[whichDay])
+                    rawDictonary[whichDay].update({'High Tide' : hightides})
+                    #print(rawDictonary[whichDay])
 
                     low_split = daily_string.split("class=\"rojo\">")
                     low_split.pop(0)
@@ -388,7 +397,7 @@ def t4f_browser(location):
                         lowtides.append(foundResult)                    
                         # print((lows.replace("<td class=\"ico\"><span class=\"icon-ficha_pleamar\"></span></td><td>","")).replace("<span class=\"prevision_unidad\">"," "))
 
-                    returnDic[whichDay].update({'Low Tide' : lowtides})
+                    rawDictonary[whichDay].update({'Low Tide' : lowtides})
 
                 elif(data == "Water temperature in"):
                     #print(whichDay)
@@ -396,7 +405,7 @@ def t4f_browser(location):
                     dayTemps.pop(0)
                     for dayTemp in dayTemps: #do i need this for loop??
                         foundResult = (dayTemp.split("</div></div></div>")[0])
-                    returnDic[whichDay].update({'Water Temperature' : foundResult})
+                    rawDictonary[whichDay].update({'Water Temperature' : foundResult})
 
                 elif(data == "Surf forecast in"):
                     s = "<div class=\"f_temp_horas\"><div class=\"f_temp_hora\">"
@@ -409,11 +418,38 @@ def t4f_browser(location):
                         second = ((rmvPercent[1]).split("%"))[1]
                         surf.append(first+second)
                         #second = data.split(':')[2].split("<span class=\"tabla_mareas_marea_altura_numero\">")[0]
-                    returnDic[whichDay].update({'Surf Forecast' : surf})
-            #returnDic.append({whichDay:{"High Tides":hightides,"Low Tides":lowtides,)
+                    rawDictonary[whichDay].update({'Surf Forecast' : surf})
+            #rawDictonary.append({whichDay:{"High Tides":hightides,"Low Tides":lowtides,)
+            
+        returnDictonary = {}
+        # print(rawDictonary)
+        for day in rawDictonary:
+            # print(day)
+            ht=""
+            lt=""
+            sf = rawDictonary.get(day)["Surf Forecast"]
+            dayInfo = {}
+            for i in range(len(allHours)):            
+                if(i == 0):                    
+                    ht=', '.join(rawDictonary.get(day)["High Tide"])
+                    lt=', '.join(rawDictonary.get(day)["Low Tide"])             
+                fa=rawDictonary.get(day)["Fish Activity"]
+                wt=rawDictonary.get(day)["Water Temperature"].replace("\u00baC","C")
+                info = sf[i].split()
+                wHeight = info[3]
+                wDirection = info[2]
+                # print(ht)
+                # print(lt)
+                # print(fa)
+                # print(wt)
+                # print(wHeight)
+                # print(wDirection)
+                # print(allHours[i])
+                dayInfo[allHours[i]] = {"Wave Height":wHeight,"Wave Direction":wDirection,"Low Tide": lt,"High Tide":ht,"Fish Activity":fa,"Sea Temperature":wt}              
+            returnDictonary[day] = dayInfo
     except:
-        returnDic = 0
-    return returnDic
+        returnDictonary = 0        
+    return returnDictonary
         
 def tides4fishing(location):
     dayResult = 0

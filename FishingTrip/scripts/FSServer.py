@@ -1,4 +1,3 @@
-from calendar import week
 import mysql.connector
 import pyodbc
 import FSEngine
@@ -92,20 +91,21 @@ cursor.close()
 
 if request == "backup":
     for spot in currFavs:
-        date = datetime.now()
-        hour = (date.strftime('%H') + " h")
+        dn = datetime.now()        
+        hour = (dn.strftime('%I %p'))
+        if(hour[0] == '0'):
+            hour = hour[1:]
         day = (datetime.today().strftime('%A'))[0:3]
+        dt_string = dn.strftime('%Y-%m-%d %H:%M:%S')
 
-        dt_string = date.strftime('%Y-%m-%d %H:%M:%S')
         FSResults = json.dumps(FSEngine.surfForecast("next",spot))
-
         T4FBulk = FSEngine.tides4fishing(spot)
-        for surf in T4FBulk[day]["Surf Forecast"]:
-            if hour in surf[0:len(hour)]:
-                T4FhourData=surf
+
+        for data in T4FBulk[day]:
+            if hour == data:
+                T4FhourData=T4FBulk[day][data]
                 break
-        T4FBulk[day]["Surf Forecast"] = T4FhourData
-        T4FResults = json.dumps(T4FBulk[day])
+        T4FResults = json.dumps(T4FhourData)
 
         if json.loads(FSResults) == False:
             FSResults=json.dumps({"Spot not found":"On SurfForecast"})
@@ -193,8 +193,8 @@ elif request == "update":
             reqRetMySql = reqRetMySql + "}"
         else:
             reqRetMySql = "{\"Spot\":\"Not found on Surf-forecast\"}"
+            
         date = datetime.now()
-        
         dt_string = date.strftime('%Y-%m-%d %H:%M:%S')
         cursor = mysqlDB.cursor()
         sqlCursor = mssqlDB.cursor()
@@ -207,18 +207,21 @@ elif request == "update":
 
         reqRetSql = "{'Spot':'Not Found'}"
         print("Looking for "+spot +" on Tides4Fishing")
-        dicT4F = FSEngine.tides4fishing(spot) 
+        dicT4F = FSEngine.tides4fishing(spot)
         if dicT4F != 0:
             print("Found "+spot+" on Tides4Fishing")
-            for day in weekFromToday:   
-                FSResults = json.dumps(dicT4F)
-                if FSResults == 0:
-                    print("No data found for this spot on site")
-                    break
-                reqRetMySql = FSResults
+            reqRetMySql = json.dumps(dicT4F)
+            # for day in weekFromToday:   
+            #     FSResults = json.dumps(dicT4F)
+            #     if FSResults == 0:
+            #         print("No data found for this spot on site")
+            #         break
+            #     reqRetMySql = FSResults
         else:
             reqRetMySql = "{\"Spot\":\"Not found on Tides4Fishing\"}"
         date = datetime.now()
+
+        #print(reqRetMySql)
         
         dt_string = date.strftime('%Y-%m-%d %H:%M:%S')
         cursor = mysqlDB.cursor()

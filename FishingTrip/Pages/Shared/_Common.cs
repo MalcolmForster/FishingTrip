@@ -83,9 +83,10 @@ namespace FishingTrip.Pages.Shared
             public string WaveDirection { get; set; }
             public string Winddirection { get; set; }
             public string WaterTemperature { get; set; }
+            public string FishActivity { get; set; }
         }
 
-        public static Dictionary<string, Hour[]> getDayInfo(JsonDocument json)
+        public static Dictionary<string, Hour[]> getDayInfo(string website, JsonDocument json)
         {
             var jsonDict = new Dictionary<string, JsonDocument>();
             jsonDict = JsonSerializer.Deserialize<Dictionary<string,JsonDocument>>(json);
@@ -94,54 +95,107 @@ namespace FishingTrip.Pages.Shared
             List<Hour> hourList = new List<Hour>();
             //string[] properties = { "Rain", "Sunset", "Sunrise", "LowTide", "HighTide", "Chilltemp", "WavePower", "WindSpeed", "Temperature", "WaveHeight", "WaveDirection", "WSW", "Winddirection" };
 
-            foreach (KeyValuePair<string,JsonDocument> kvp in jsonDict)
+            if (website == "SF")
             {
-                if (kvp.Key != "Spot")
+                foreach (KeyValuePair<string, JsonDocument> kvp in jsonDict)
                 {
-                    //String here is the Day
-                    var hoursForDay = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>(kvp.Value);
-                    hourList.Clear();
-                    foreach (KeyValuePair<string, JsonDocument> kvp2 in hoursForDay)
+                    if (kvp.Key != "Spot")
                     {
-                        //String here is the time of day, with JsonDocument being information
-                        //A new hour object is made and all the values assigned
-                        Hour newHour = new Hour();
-                        newHour.Time = kvp2.Key;
-                        newHour.Rain = kvp2.Value.RootElement.GetProperty("Rain").ToString();
-                        newHour.Sunset = kvp2.Value.RootElement.GetProperty("Sunset").ToString();
-                        newHour.Sunrise = kvp2.Value.RootElement.GetProperty("Sunrise").ToString();
-                        newHour.LowTide = kvp2.Value.RootElement.GetProperty("Low Tide").ToString();
-                        newHour.HighTide = kvp2.Value.RootElement.GetProperty("High Tide").ToString();
-                        newHour.Chilltemp = kvp2.Value.RootElement.GetProperty("Chill temp").ToString();
-                        newHour.WavePower = kvp2.Value.RootElement.GetProperty("Wave Power").ToString();
-                        newHour.WindSpeed = kvp2.Value.RootElement.GetProperty("Wind Speed").ToString();
-                        newHour.Temperature = kvp2.Value.RootElement.GetProperty("Temperature").ToString();
-                        newHour.WaveHeight = kvp2.Value.RootElement.GetProperty("Wave Height").ToString();
-                        newHour.WaveDirection = kvp2.Value.RootElement.GetProperty("Wave Direction").ToString();
-                        newHour.Winddirection = kvp2.Value.RootElement.GetProperty("Wind direction").ToString();
-                        newHour.WaterTemperature = kvp2.Value.RootElement.GetProperty("Sea Temperature").ToString();
-                        //Add the hour to the hour list for the day
-                        hourList.Add(newHour);
+                        //String here is the Day
+                        var hoursForDay = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>(kvp.Value);
+                        hourList.Clear();
+                        foreach (KeyValuePair<string, JsonDocument> kvp2 in hoursForDay)
+                        {
+                            //String here is the time of day, with JsonDocument being information
+                            //A new hour object is made and all the values assigned
+                            Hour newHour = new Hour();
+                            newHour.Time = kvp2.Key;
+                            newHour.Rain = kvp2.Value.RootElement.GetProperty("Rain").ToString();
+                            newHour.Sunset = kvp2.Value.RootElement.GetProperty("Sunset").ToString();
+                            newHour.Sunrise = kvp2.Value.RootElement.GetProperty("Sunrise").ToString();
+                            newHour.LowTide = kvp2.Value.RootElement.GetProperty("Low Tide").ToString();
+                            newHour.HighTide = kvp2.Value.RootElement.GetProperty("High Tide").ToString();
+                            newHour.Chilltemp = kvp2.Value.RootElement.GetProperty("Chill temp").ToString();
+                            newHour.WavePower = kvp2.Value.RootElement.GetProperty("Wave Power").ToString();
+                            newHour.WindSpeed = kvp2.Value.RootElement.GetProperty("Wind Speed").ToString();
+                            newHour.Temperature = kvp2.Value.RootElement.GetProperty("Temperature").ToString();
+                            newHour.WaveHeight = kvp2.Value.RootElement.GetProperty("Wave Height").ToString();
+                            newHour.WaveDirection = kvp2.Value.RootElement.GetProperty("Wave Direction").ToString();
+                            newHour.Winddirection = kvp2.Value.RootElement.GetProperty("Wind direction").ToString();
+                            newHour.WaterTemperature = kvp2.Value.RootElement.GetProperty("Sea Temperature").ToString();
+                            //Add the hour to the hour list for the day
+                            hourList.Add(newHour);
+                        }
+                        //Convert the daily hours to an array
+                        Hour[] hourArray = hourList.ToArray();
+                        dailyForecast.Add(kvp.Key, hourArray);
                     }
-                    //Convert the daily hours to an array
-                    Hour[] hourArray = hourList.ToArray();
-                    dailyForecast.Add(kvp.Key, hourArray);
-                } else {
-                    Hour[] newHour = new Hour[0];
-                    dailyForecast.Add("Not Found", newHour);
+                    else
+                    {
+                        Hour[] newHour = new Hour[0];
+                        dailyForecast.Add("Not Found", newHour);
+                    }
                 }
-            }            
+            }
+            else if (website == "T4F")
+            {
+                foreach (KeyValuePair<string, JsonDocument> kvp in jsonDict)
+                {
+                    if (kvp.Key != "Spot")
+                    {
+                        //String here is the Day
+                        var hoursForDay = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>(kvp.Value);
+                        hourList.Clear();
+
+                        foreach (KeyValuePair<string, JsonDocument> kvp2 in hoursForDay)
+                        {
+                            if (ForecastFormat.displayTimes.Contains(kvp2.Key))
+                            {
+                                //String here is the time of day, with JsonDocument being information
+                                //A new hour object is made and all the values assigned
+                                Hour newHour = new Hour();
+                                newHour.Time = kvp2.Key;
+                                //newHour.Rain = kvp2.Value.RootElement.GetProperty("Rain").ToString();
+                                //newHour.Sunset = kvp2.Value.RootElement.GetProperty("Sunset").ToString();
+                                //newHour.Sunrise = kvp2.Value.RootElement.GetProperty("Sunrise").ToString();
+                                newHour.LowTide = kvp2.Value.RootElement.GetProperty("Low Tide").ToString();
+                                newHour.HighTide = kvp2.Value.RootElement.GetProperty("High Tide").ToString();
+                                //newHour.Chilltemp = kvp2.Value.RootElement.GetProperty("Chill temp").ToString();
+                                //newHour.WavePower = kvp2.Value.RootElement.GetProperty("Wave Power").ToString();
+                                //newHour.WindSpeed = kvp2.Value.RootElement.GetProperty("Wind Speed").ToString();
+                                //newHour.Temperature = kvp2.Value.RootElement.GetProperty("Temperature").ToString();
+                                newHour.WaveHeight = kvp2.Value.RootElement.GetProperty("Wave Height").ToString();
+                                newHour.WaveDirection = kvp2.Value.RootElement.GetProperty("Wave Direction").ToString();
+                                //newHour.Winddirection = kvp2.Value.RootElement.GetProperty("Wind direction").ToString();
+                                newHour.WaterTemperature = kvp2.Value.RootElement.GetProperty("Sea Temperature").ToString();
+                                newHour.FishActivity = kvp2.Value.RootElement.GetProperty("Fish Activity").ToString();
+                                //Add the hour to the hour list for the day
+                                hourList.Add(newHour);
+                            }
+
+                        }
+                        //Convert the daily hours to an array
+                        Hour[] hourArray = hourList.ToArray();
+                        dailyForecast.Add(kvp.Key, hourArray);
+                    }
+                    else
+                    {
+                        Hour[] newHour = new Hour[0];
+                        dailyForecast.Add("Not Found", newHour);
+                    }
+
+                }
+            }
             return dailyForecast;
         }
 
-        public static Dictionary<string, Hour[]> getFavConditions(string spot, string[] days)
+        public static Dictionary<string, Hour[]> getFavConditions(string website, string spot, string[] days)
         {
             string MyConnectionString = _ServerConnections.linux;
-
             SqlDataReader rdr = null;
             SqlConnection cnn =new SqlConnection();
             cnn = new SqlConnection(MyConnectionString);
-            string query = ("SELECT [dataSF] FROM favForecastsSF WHERE [spot] = @spot");
+            string query = String.Format("SELECT [dataSF] FROM favForecasts{0} WHERE [spot] = @spot", website);
             SqlCommand cmd = new SqlCommand(query, cnn);
 
             try
@@ -158,15 +212,14 @@ namespace FishingTrip.Pages.Shared
 
             if (cnn != null && cnn.State == ConnectionState.Closed)
             {
-                //nothin here apparently
+                //nothin here currently to deal with a failed connection, maybe an HTML.raw output saying fialed to connect?
             } else {
                 using (rdr = cmd.ExecuteReader())
                 {
                     while(rdr.Read())
-                    {
-                        
+                    {                        
                         JsonDocument json = JsonDocument.Parse(rdr.GetString(0));
-                        dayInfo = getDayInfo(json);
+                        dayInfo = getDayInfo(website,json);
                     }
                 }
             }

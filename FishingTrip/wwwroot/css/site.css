@@ -8,6 +8,11 @@ html {
     font-size: 14px;
 }
 
+.tabSpace {
+    display: inline-block;
+    tab-size:40px;
+}
+
 @media (min-width: 768px) {
     html {
         font-size: 16px;

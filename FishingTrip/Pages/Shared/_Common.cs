@@ -234,46 +234,45 @@ namespace FishingTrip.Pages.Shared
             return s;
         }
 
-        //-------------No longer needed as the Forecast is taken off mysql database, may need to reenable-----------
-        //public static string spot_Forecast(string Spot, string[] days)
-        //{
-        //    //This requires the use of the the python webscraper, found in Pages\Shared\Scripts
-        //    string json = "";
-        //    string[] daysShort = new string[days.Length];
-        //    string pyScript = "Pages\\Shared\\scripts\\FSServer.py";
+        public static string spot_Forecast(string Spot, string[] days)
+        {
+            //This requires the use of the the python webscraper, found in Pages\Shared\Scripts
+            string json = "";
+            string[] daysShort = new string[days.Length];
+            string pyScript = "Pages\\Shared\\scripts\\FSServer.py";
 
-        //    for(int i = 0; i < days.Length; i++)
-        //    {
-        //        daysShort[i] = days[i].Substring(0,3);
-        //    }
+            for (int i = 0; i < days.Length; i++)
+            {
+                daysShort[i] = days[i].Substring(0, 3);
+            }
 
-        //    ProcessStartInfo start = new ProcessStartInfo();
-        //    start.FileName = "Root to python path;
-        //    //Console.WriteLine(string.Format("{0} request {1} {2}",pyScript, "\"" + Spot + "\"", String.Join(" ", daysShort)));
-        //    start.Arguments = string.Format("{0} request {1} {2}",pyScript, "\"" + Spot + "\"", String.Join(" ", daysShort));
-        //    start.UseShellExecute = false;
-        //    start.RedirectStandardOutput = true;
-        //    Process p = new Process();
-        //    p.StartInfo = start;
-        //    p.Start();
-        //    StreamReader reader = p.StandardOutput;
-        //    json = reader.ReadToEnd();
+            ProcessStartInfo start = new ProcessStartInfo();
+            start.FileName = "Root to python path;"
+            //Console.WriteLine(string.Format("{0} request {1} {2}",pyScript, "\"" + Spot + "\"", String.Join(" ", daysShort)));
+            start.Arguments = string.Format("{0} request {1} {2}", pyScript, "\"" + Spot + "\"", String.Join(" ", daysShort));
+            start.UseShellExecute = false;
+            start.RedirectStandardOutput = true;
+            Process p = new Process();
+            p.StartInfo = start;
+            p.Start();
+            StreamReader reader = p.StandardOutput;
+            json = reader.ReadToEnd();
 
 
-        //    //$directory = str_replace("user", "scripts/FSServer.py", getcwd());
+            //$directory = str_replace("user", "scripts/FSServer.py", getcwd());
 
-        //    //$command = ("python3 ". $directory." request \"".trim($_POST['fishSpot'])."\" ".join(" ",$_POST['days']));
-        //    //$output = exec($command);
+            //$command = ("python3 ". $directory." request \"".trim($_POST['fishSpot'])."\" ".join(" ",$_POST['days']));
+            //$output = exec($command);
 
-        //    //// $command = escapeshellcmd("python3 " . $directory." request \"" . trim($_POST['fishSpot']) ."\" ". join(" ",$_POST['days']));
-        //    //// $output = shellexec($command);
+            //// $command = escapeshellcmd("python3 " . $directory." request \"" . trim($_POST['fishSpot']) ."\" ". join(" ",$_POST['days']));
+            //// $output = shellexec($command);
 
-        //    //$decoded = json_decode($output, TRUE);
+            //$decoded = json_decode($output, TRUE);
 
-        //    //echo $decoded["Wed"];
+            //echo $decoded["Wed"];
 
-        //    return json;
-        //}
+            return json;
+        }
 
         public static string[] getFavSpots(string uId)
         {

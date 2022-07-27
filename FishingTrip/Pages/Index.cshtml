@@ -33,31 +33,36 @@
             <p>Insert recent friend posts here</p>
             //Find method to be able to find friends and then add there most recent posts similar to the old PHP style site
 
-            <h1>Favourite fishing locations - Quick view</h1>
-            <label>This weeks conditions at your favourite fishing spots</label>
+            <h1>Fishing location weather forecast</h1>
             <form id="checkDays" action="~/" method="post">
-                <label>Days to compare: </label>
-                <ul class="favSpotList">
+                <label>Days to compare:</label>
                     @{
-                        //string[] week = nextDays(7);
-                        for (int i = 0; i <week.Length; i++)
+                        for (int i = 0; i < week.Length; i++)
                         {
                             if (week[i] != "")
                             {
-                                            <label>@week[i]:</label>
-                                if (i <3)
+                                <label>&nbsp&nbsp&nbsp&nbsp</label>
+                                <label>@week[i]:</label>
+                                if (i < 3)
                                 {
-                                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] checked />
+                                    <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] checked/>
                                 }
                                 else
                                 {
-                                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] />
-                                }
+                                    <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] />
+                                }                                
                             }
                         }
                     }
-                </ul>
             </form>
+            <h2>Find forecast for a fishing spot</h2>
+            //Following form is used to search for forecasts at a new spot
+            <form id="newSpot" action="~/" method="post">
+                <input id="newSpotInput" type="text" size="50" placeholder="Input fishing location here">
+                <input id="newSpotSubmit" type="submit" value="Find forecast"/>
+            </form>
+            <br/>
+            <h2>Conditions at your favourite fishing spots</h2>
             <form id="checkSpot" action="~/" method="post">
                 <ul class="favSpotList">
                     @{

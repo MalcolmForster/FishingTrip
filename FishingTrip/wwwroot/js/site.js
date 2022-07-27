@@ -31,3 +31,15 @@ function indexLoad() {
     const daysToShow = setDays();
     toggleForecast(daysToShow);
 }
+
+function newForecastDiv() {
+
+    spot = document.getElementById('newSpotInput').value;
+    document.write(spot);
+    //Method to see if this spot (and its forecast) exist in the favSpotForecasts databases
+    //the _Common/getFavConditions(string website, string spot, string[] days) method can be used
+    
+
+    
+
+}

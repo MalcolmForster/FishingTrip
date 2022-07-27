@@ -4,6 +4,7 @@ using System.Web;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text.Json;
+using Microsoft.JSInterop;
 
 namespace FishingTrip.Pages.Shared
 {
@@ -189,7 +190,8 @@ namespace FishingTrip.Pages.Shared
             return dailyForecast;
         }
 
-        public static Dictionary<string, Hour[]> getFavConditions(string website, string spot, string[] days)
+        [JSInvokable]
+        public static Dictionary<string, Hour[]> getFavConditions(string website, string spot, string[] days)//days may need to be used later?
         {
             string MyConnectionString = _ServerConnections.linux;
             SqlDataReader rdr = null;
@@ -234,7 +236,7 @@ namespace FishingTrip.Pages.Shared
             return s;
         }
 
-        public static string spot_Forecast(string Spot, string[] days)
+        public static string spot_Forecast(string Spot, string[] days) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
         {
             //This requires the use of the the python webscraper, found in Pages\Shared\Scripts
             string json = "";
@@ -247,7 +249,7 @@ namespace FishingTrip.Pages.Shared
             }
 
             ProcessStartInfo start = new ProcessStartInfo();
-            start.FileName = "Root to python path;"
+            start.FileName = "Root to python path;";
             //Console.WriteLine(string.Format("{0} request {1} {2}",pyScript, "\"" + Spot + "\"", String.Join(" ", daysShort)));
             start.Arguments = string.Format("{0} request {1} {2}", pyScript, "\"" + Spot + "\"", String.Join(" ", daysShort));
             start.UseShellExecute = false;
@@ -371,7 +373,7 @@ namespace FishingTrip.Pages.Shared
                     }
                 }
                 if (rmvFav == true)
-        {
+                {
                     string newFavConcat = String.Join(",", allSpots).Replace(fav +",","");
                     SqlConnection conn = dbConnect();
                     string query = "UPDATE [dbo].[AspNetUsers] SET [FavSpots] = @newFavs WHERE Id= @userID;";
@@ -397,6 +399,12 @@ namespace FishingTrip.Pages.Shared
             {
                 Console.WriteLine("No favourites found");
             }
+        }
+        public static void newForecastDiv(string fishingSpot)
+        {
+
+            Console.WriteLine(fishingSpot);
+
         }
     }
 }

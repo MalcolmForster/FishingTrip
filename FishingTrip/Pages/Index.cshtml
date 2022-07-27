@@ -36,32 +36,39 @@
             <h1>Fishing location weather forecast</h1>
             <form id="checkDays" action="~/" method="post">
                 <label>Days to compare:</label>
-                    @{
-                        for (int i = 0; i < week.Length; i++)
+                @{
+                    for (int i = 0; i < week.Length; i++)
+                    {
+                        if (week[i] != "")
                         {
-                            if (week[i] != "")
+                            <label>&nbsp&nbsp&nbsp&nbsp</label>
+                            <label>@week[i]:</label>
+                            if (i < 3)
                             {
-                                <label>&nbsp&nbsp&nbsp&nbsp</label>
-                                <label>@week[i]:</label>
-                                if (i < 3)
-                                {
-                                    <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] checked/>
-                                }
-                                else
-                                {
-                                    <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] />
-                                }                                
+                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] checked />
+                            }
+                            else
+                            {
+                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] />
                             }
                         }
                     }
+                }
             </form>
             <h2>Find forecast for a fishing spot</h2>
             //Following form is used to search for forecasts at a new spot
-            <form id="newSpot" action="~/" method="post">
+            <form id="newSpot">
                 <input id="newSpotInput" type="text" size="50" placeholder="Input fishing location here">
-                <input id="newSpotSubmit" type="submit" value="Find forecast"/>
+                <input id="newSpotSubmit" type="button" value="Find forecast" onclick="newForecastDiv()" />
             </form>
-            <br/>
+            <br />
+            /*
+            method to create a new div, similar to those in the favouriteSpots, to display a loading symbol until data on the input spot
+            from newSpotInput can be retrieved from database tables spotForecast(SF/T4F)
+                */
+
+
+
             <h2>Conditions at your favourite fishing spots</h2>
             <form id="checkSpot" action="~/" method="post">
                 <ul class="favSpotList">

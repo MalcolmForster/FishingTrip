@@ -38,4 +38,14 @@ namespace FishingTrip.Pages.Shared
             waterTemp = @dayInfo.Value.First().WaterTemperature.Replace("[", "").Replace("]", "");
         }
     }
+
+    public class ForecastDiv
+    {
+        public string searchSpot { get; set; }
+
+        public ForecastDiv(string searchSpot)
+        {
+            this.searchSpot = searchSpot;
+        }
+    }
 }

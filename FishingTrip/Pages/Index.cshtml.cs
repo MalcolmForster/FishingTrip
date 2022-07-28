@@ -36,7 +36,10 @@ namespace FishingTrip.Pages
                 string user = User.Claims.ElementAtOrDefault(0).Value;
                 remove_Favourite(favSpot, user);
             }
-
+            else if (Request.Form["searchSpot"]=="true")
+            {
+                //add_Search(Request.Form["newSpotInput"], User.Claims.ElementAtOrDefault(0).Value);
+            }
         }
     }
 }

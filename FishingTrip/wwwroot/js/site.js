@@ -1,6 +1,8 @@
 ﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bun2dling-and-minification
 // for details on configuring this project to bundle and minify static web assets.
 
+//import { ajax, get } from "jquery";
+
 // Write your JavaScript code.
 
 function setDays() {
@@ -32,14 +34,56 @@ function indexLoad() {
     toggleForecast(daysToShow);
 }
 
+function forecastDicToDiv() {
+
+}
+
 function newForecastDiv() {
 
     spot = document.getElementById('newSpotInput').value;
-    document.write(spot);
+    if (document.getElementById("newSpotParent")) {
+        alert("found");
+    }
+    var div = document.createElement("div");
+    var loader = document.createElement("div");
+    loader.appendChild(document.createElement("div"));
+    loader.appendChild(document.createElement("div"));
+    loader.appendChild(document.createElement("div"));
+    loader.appendChild(document.createElement("div"));
+    loader.setAttribute('class', 'lds-ellipse');
+
+    div.setAttribute('class', 'forecastDiv');
+    div.setAttribute('id', 'spot' + spot );
+    div.appendChild(loader);
+    
+    document.getElementById("newSpotParent").appendChild(div);
+
+
+    //document.write(spot);
     //Method to see if this spot (and its forecast) exist in the favSpotForecasts databases
     //the _Common/getFavConditions(string website, string spot, string[] days) method can be used
+
+    // First check is to see if spot exits on the current favourite list
+
+    //$.ajax({
+    //    type: 'get',
+    //    url: '?handler=FindSpot',
+    //    data: { spot: spot },
+    //    contentType: 'application/json',
+    //    success: function(spot) {
+    //        alert(spot);
+    //    },
+    //    //error: function (error) {
+    //    //    alert("Error: + error");
+    //    //}
+    //})
+
+
+
+    //new method to 
     
 
     
 
 }
+

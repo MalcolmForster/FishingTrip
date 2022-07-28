@@ -37,7 +37,8 @@ namespace FishingTrip.Pages.Shared
             {
                 cnn.Open();
                 return cnn;
-            } catch
+            }
+            catch
             {
                 Console.WriteLine("Failed to connect to database");
                 return null;
@@ -62,7 +63,8 @@ namespace FishingTrip.Pages.Shared
             try
             {
                 SqlCommand cmd = new SqlCommand(command, cnn);
-            } catch
+            }
+            catch
             {
                 Console.WriteLine("Execute command failed");
             }
@@ -90,7 +92,7 @@ namespace FishingTrip.Pages.Shared
         public static Dictionary<string, Hour[]> getDayInfo(string website, JsonDocument json)
         {
             var jsonDict = new Dictionary<string, JsonDocument>();
-            jsonDict = JsonSerializer.Deserialize<Dictionary<string,JsonDocument>>(json);
+            jsonDict = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>(json);
             var dailyForecast = new Dictionary<string, Hour[]>();
 
             List<Hour> hourList = new List<Hour>();
@@ -190,12 +192,11 @@ namespace FishingTrip.Pages.Shared
             return dailyForecast;
         }
 
-        [JSInvokable]
-        public static Dictionary<string, Hour[]> getFavConditions(string website, string spot, string[] days)//days may need to be used later?
+        public static Dictionary<string, Hour[]> getNewConditions(string website, string spot)//days may need to be used later?
         {
-            string MyConnectionString = _ServerConnections.linux;
+            string MyConnectionString = _ServerConnections.linux; //Connect to the local database
             SqlDataReader rdr = null;
-            SqlConnection cnn =new SqlConnection();
+            SqlConnection cnn = new SqlConnection();
             cnn = new SqlConnection(MyConnectionString);
             string query = String.Format("SELECT [dataSF] FROM favForecasts{0} WHERE [spot] = @spot", website);
             SqlCommand cmd = new SqlCommand(query, cnn);
@@ -203,11 +204,12 @@ namespace FishingTrip.Pages.Shared
             try
             {
                 cmd.Connection.Open();
-            } catch (SqlException ex)
+            }
+            catch (SqlException ex)
             {
                 Console.WriteLine(ex.Message);
             }
-            
+
             cmd.Parameters.AddWithValue("@spot", spot);
 
             var dayInfo = new Dictionary<string, Hour[]>();
@@ -215,17 +217,62 @@ namespace FishingTrip.Pages.Shared
             if (cnn != null && cnn.State == ConnectionState.Closed)
             {
                 //nothin here currently to deal with a failed connection, maybe an HTML.raw output saying fialed to connect?
-            } else {
+            }
+            else
+            {
                 using (rdr = cmd.ExecuteReader())
                 {
-                    while(rdr.Read())
-                    {                        
+                    while (rdr.Read())
+                    {
                         JsonDocument json = JsonDocument.Parse(rdr.GetString(0));
-                        dayInfo = getDayInfo(website,json);
+                        dayInfo = getDayInfo(website, json);
                     }
                 }
             }
-            
+            closeDB(cnn, rdr);
+            return dayInfo;
+        }
+
+
+
+
+        public static Dictionary<string, Hour[]> getFavConditions(string website, string spot)//days may need to be used later?
+        {
+            string MyConnectionString = _ServerConnections.linux;
+            SqlDataReader rdr = null;
+            SqlConnection cnn = new SqlConnection();
+            cnn = new SqlConnection(MyConnectionString);
+            string query = String.Format("SELECT [dataSF] FROM favForecasts{0} WHERE [spot] = @spot", website);
+            SqlCommand cmd = new SqlCommand(query, cnn);
+
+            try
+            {
+                cmd.Connection.Open();
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            cmd.Parameters.AddWithValue("@spot", spot);
+
+            var dayInfo = new Dictionary<string, Hour[]>();
+
+            if (cnn != null && cnn.State == ConnectionState.Closed)
+            {
+                //nothin here currently to deal with a failed connection, maybe an HTML.raw output saying fialed to connect?
+            }
+            else
+            {
+                using (rdr = cmd.ExecuteReader())
+                {
+                    while (rdr.Read())
+                    {
+                        JsonDocument json = JsonDocument.Parse(rdr.GetString(0));
+                        dayInfo = getDayInfo(website, json);
+                    }
+                }
+            }
             closeDB(cnn, rdr);
             return dayInfo;
         }
@@ -276,7 +323,25 @@ namespace FishingTrip.Pages.Shared
             return json;
         }
 
-        public static string[] getFavSpots(string uId)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //This method gets all recently searched spots from the database
+        public static string[] getSearchedSpots(string uId)
         {
             SqlConnection cnn = dbConnect();
             SqlDataReader rdr = null;
@@ -288,11 +353,11 @@ namespace FishingTrip.Pages.Shared
                 try
                 {
                     cmd.Parameters.AddWithValue("@userID", uId);
-        }
+                }
                 catch
-        {
+                {
                     Console.WriteLine("Parameters failed to be added to query");
-                }                
+                }
                 try
                 {
                     using (rdr = cmd.ExecuteReader())
@@ -300,7 +365,6 @@ namespace FishingTrip.Pages.Shared
                         if (rdr.Read())
                         {
                             string[] allSpots = rdr.GetString(0).Trim('\'').Split(",");
-            
                             return allSpots;
                         }
                     }
@@ -315,11 +379,173 @@ namespace FishingTrip.Pages.Shared
             return emptyString;
         }
 
+
+        
+        public static void add_Search(string spotSearched, string uId)
+        {
+            SqlConnection cnn = dbConnect();
+            SqlDataReader rdr = null;
+            bool returnExisting = false;
+            string[] tableToSearch = { "[dbo].[favForecastsSF]", "[dbo].[favForecastsT4F]", "[dbo].[searchForecasts]" };
+
+            foreach (string table in tableToSearch)
+            {
+                string query = "SELECT @spot FROM @db";
+                SqlCommand cmd = new SqlCommand(query, cnn);
+                cmd.Parameters.AddWithValue("@spot", spotSearched);
+                cmd.Parameters.AddWithValue("@db", table);
+
+                using (rdr = cmd.ExecuteReader())
+                {
+                    if (rdr.Read())
+                    {
+
+                        string[] curSearches = rdr.GetString(0).Trim('\'').Split(",");
+                        if (curSearches != null && curSearches.Length > 0)
+                        {
+                            try
+                            {
+                                curSearches = null;
+
+                                // if the data is found in the seachForecasts table, first check if the current user is already the one who initilised the search,
+                                // if they are then don't copy again, send message saying this is already been searched by them
+                                // if the user id is different to current user then copy the data with the current user's user ID
+                                if (table.Contains("search"))
+                                {
+                                    string chkQuery = "SELECT @spot FROM @tab WHERE UserName = '@userID'";
+                                    cmd = new SqlCommand(chkQuery, cnn);
+                                    cmd.Parameters.AddWithValue("@spot", spotSearched);
+                                    cmd.Parameters.AddWithValue("@tab", table);
+                                    cmd.Parameters.AddWithValue("@userID", uId);
+                                    using (rdr = cmd.ExecuteReader())
+                                    {
+                                        curSearches = rdr.GetString(0).Trim('\'').Split(",");
+                                    }
+                                }
+
+                                if (table.Contains("fav") || curSearches.Length == 0)
+                                {
+                                    string cpyQuery = "INSERT INTO [dbo].[searchForecasts] (spot, dataSF) SELECT spot, dataSF FROM @tab";
+                                    string updQuery = "UPDATE [dbo].[searchForecasts] SET [UserName] = '@userId' WHERE [UserName] IS NULL";
+                                    cmd = new SqlCommand(cpyQuery, cnn);
+                                    cmd.Parameters.AddWithValue("@tab", table);
+                                    cmd.ExecuteReader();
+                                    cmd = new SqlCommand(updQuery, cnn);
+                                    cmd.Parameters.AddWithValue("@userID", uId);
+                                    cmd.ExecuteReader();
+                                }
+
+                            }
+                            catch
+                            {
+                                Console.WriteLine("Try in add_Search failed");
+                            }
+                        } else
+                        {
+                            //Program continues here if the spot is not found on in the current tables for searched spot
+                            /*
+                             * 
+                             * 
+                             * This section will run the python script and add a new JSON file to the database under the spot name
+                             * 
+                             * 
+                             * 
+                             * 
+                             * 
+                             */
+
+                            string insertQuery = "INSERT INTO [dbo].[searchForecasts] (UserName, spot, dataSF) VALUES (@userID, @spot, @json)";
+                            cmd = new SqlCommand(insertQuery, cnn);
+
+                            try
+                            {
+                                using (rdr = cmd.ExecuteReader())
+                                {
+                                    if (rdr.Read())
+                                    {
+                                        curSearches = rdr.GetString(0).Trim('\'').Split(",");
+                                        foreach (string s in curSearches)
+                                        {
+                                            if (s == spotSearched)
+                                            {
+                                                //Method to return the json in the database as they already exist.
+                                                break;
+                                            }
+                                        }
+
+                                    }
+                                }
+                            }
+                            catch
+                            {
+                                Console.WriteLine("method add_Seach returned an error");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // This method returns a list of spots the use has on their favourite list
+        public static string[] getFavSpots(string uId)
+        {
+            SqlConnection cnn = dbConnect();
+            SqlDataReader rdr = null;
+
+            if (cnn != null)
+            {
+                string query = "SELECT [FavSpots] FROM [dbo].[AspNetUsers] WHERE Id=@userID;";
+                SqlCommand cmd = new SqlCommand(query, cnn);
+                try
+                {
+                    cmd.Parameters.AddWithValue("@userID", uId);
+                }
+                catch
+                {
+                    Console.WriteLine("Parameters failed to be added to query");
+                }
+                try
+                {
+                    using (rdr = cmd.ExecuteReader())
+                    {
+                        if (rdr.Read())
+                        {
+                            string[] allSpots = rdr.GetString(0).Trim('\'').Split(",");
+                            foreach(string s in allSpots)                        
+                            return allSpots;
+                        }
+                    }
+                }
+                catch
+                {
+                    Console.WriteLine("getFavSpots failed to execute reader");
+                }
+            }
+            closeDB(cnn, rdr);
+            string[] emptyString = new string[0];
+            return emptyString;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         public static void add_Favourite(string fav, string uId)
         {
-            string[] allSpots = getFavSpots(uId);            
+            string[] allSpots = getFavSpots(uId);
 
-            if(allSpots != null || allSpots.Length > 0)
+            if (allSpots != null || allSpots.Length > 0)
             {
                 bool addFav = true;
                 foreach (string s in allSpots)
@@ -345,17 +571,35 @@ namespace FishingTrip.Pages.Shared
                     {
                         alterFavs.ExecuteNonQuery();
                         Console.WriteLine(fav + " added to favourites");
-                    } catch
+                    }
+                    catch
                     {
                         Console.WriteLine("Something went wrong when updating table");
                     }
                     closeDB(conn, null);
                 }
-            } else
+            }
+            else
             {
                 Console.WriteLine("No favourites found");
             }
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         public static void remove_Favourite(string fav, string uId)
         {
             string[] allSpots = getFavSpots(uId);
@@ -374,7 +618,7 @@ namespace FishingTrip.Pages.Shared
                 }
                 if (rmvFav == true)
                 {
-                    string newFavConcat = String.Join(",", allSpots).Replace(fav +",","");
+                    string newFavConcat = String.Join(",", allSpots).Replace(fav + ",", "");
                     SqlConnection conn = dbConnect();
                     string query = "UPDATE [dbo].[AspNetUsers] SET [FavSpots] = @newFavs WHERE Id= @userID;";
                     SqlCommand alterFavs = new SqlCommand(query, conn);
@@ -390,7 +634,8 @@ namespace FishingTrip.Pages.Shared
                         Console.WriteLine("Something went wrong when updating table");
                     }
                     closeDB(conn, null);
-                } else
+                }
+                else
                 {
                     Console.WriteLine(fav + " not found in favourites");
                 }

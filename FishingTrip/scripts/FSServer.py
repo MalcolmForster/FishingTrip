@@ -184,8 +184,13 @@ elif request == "request":
         # if(json.loads(reqRetT4F)):
         #     print("T4F works")
         sqlCursor = mssqlDB.cursor()
-        sqlCursor.execute("""INSERT INTO spotForecastsSF (spot,date_time, dataSF) VALUES ('%s', '%s','%s')"""% (spot, dt_string, reqRetSF))
-        sqlCursor.execute("""INSERT INTO spotForecastsT4F (spot,date_time, dataSF) VALUES ('%s', '%s','%s')"""% (spot, dt_string, reqRetT4F))        
+        # sqlCursor.execute("""INSERT INTO spotForecastsSF (spot,date_time, dataSF) VALUES ('%s', '%s','%s')"""% (spot, dt_string, reqRetSF))
+        # sqlCursor.execute("""INSERT INTO spotForecastsT4F (spot,date_time, dataSF) VALUES ('%s', '%s','%s')"""% (spot, dt_string, reqRetT4F)) 
+        if reqRetSF.__contains__("Not Found"):
+            reqRet = reqRetT4F
+        else:
+            reqRet = reqRetSF
+        sqlCursor.execute("""INSERT INTO spotForecasts (spot, date_time, dataSF) VALUES ('%s', '%s','%s')"""% (spot, dt_string, reqRet)) 
         sqlCursor.close()
     else:
         for day in days:

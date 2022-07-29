@@ -41,15 +41,15 @@
                     {
                         if (week[i] != "")
                         {
-                            <label>&nbsp&nbsp&nbsp&nbsp</label>
-                            <label>@week[i]:</label>
+                                            <label>&nbsp&nbsp&nbsp&nbsp</label>
+                                            <label>@week[i]:</label>
                             if (i < 3)
                             {
-                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] checked />
+                                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] checked />
                             }
                             else
                             {
-                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] />
+                                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] />
                             }
                         }
                     }
@@ -64,239 +64,180 @@
             </form>
             <br/>
 
-
-
-
             /*
             method to create a new div, similar to those in the favouriteSpots, to display a loading symbol until data on the input spot
             from newSpotInput can be retrieved from database tables spotForecast(SF/T4F)
             */
-
-
-
-
-
-
-            string[] searchedSpots = getSearchedSpots(User.Claims.ElementAtOrDefault(0).Value);
-
-
-
-
-
-            //UNCOMMENT THE BELOW SECTION FIRST THING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
-
-            @*foreach (string spot in searchedSpots) 
-            {
-                Dictionary<string, Hour[]> dataSF = getFavConditions("SF", spot);
-                //Dictionary<string, Hour[]> dataT4F = getFavConditions("T4F", spot);
-
-                if (dataSF.Keys.First() != "Not Found")
-                {
-                    foreach (KeyValuePair<string, Hour[]> dayInfo in dataSF)
+            <ul class="favSpotList">
+                @{
+                    string[] searchedSpots = getSearchedSpots(User.Claims.ElementAtOrDefault(0).Value);
+                    foreach (string spot in searchedSpots)
                     {
-                        if (dayInfo.Key != "Not Found")
+                        if (spot != "")
                         {
-                            <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
-                                @{
-                                    ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
-                                    <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
-                                    <label>
-                                        Low tides: @forecastDiv.lowTides
-                                    </label>
-                                    <label>
-                                        , High tides: @forecastDiv.highTides
-                                    </label>
-                                    <label>
-                                        , Sea Temperature: @forecastDiv.waterTemp
-                                    </label>
-                                    <table class="forecastTable">
-                                        <tr>
-                                            <th></th>
-                                            @foreach (string time in ForecastFormat.displayTimes)
-                                            {
-                                                < th > @time </ th >
-                                            }
-                                        </tr>
-                                        @foreach (string s in forecastDiv.waveInfo)
+                                <li style="background-color: lightslategrey;" name=@String.Concat("fav",spot.Replace(" ","_"))>
+                                    <h2>@spot</h2>
+                                    <div name="dayForecastDetails">
+                                        @{
+                                        Dictionary<string, Hour[]> usersSearchedSpots = getForecastConditions("FTW", spot);
+                                        //Dictionary<string, Hour[]> dataT4F = getFavConditions("T4F", spot);
+
+                                        if (usersSearchedSpots.Count() > 0 && usersSearchedSpots.Keys.First() != "Not Found")
                                         {
-                                            < td > @s </ td >
+                                            foreach (KeyValuePair<string, Hour[]> dayInfo in usersSearchedSpots)
+                                            {
+                                                if (dayInfo.Key != "Not Found")
+                                                {
+                                                            <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
+                                                                @{
+                                                            ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
+                                                                        <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
+                                                                        <label>
+                                                                            Low tides: @forecastDiv.lowTides
+                                                                        </label>
+                                                                        <label>
+                                                                            , High tides: @forecastDiv.highTides
+                                                                        </label>
+                                                                        <label>
+                                                                            , Sea Temperature: @forecastDiv.waterTemp
+                                                                        </label>
+                                                                        <table class="forecastTable">
+                                                                            <tr>
+                                                                                <th></th>
+                                                                                @foreach (string time in ForecastFormat.displayTimes)
+                                                                    {
+                                                                                    <th> @time </th>
+                                                                    }
+                                                                            </tr>
+                                                                            @foreach (string s in forecastDiv.waveInfo)
+                                                                {
+                                                                                <td>@s</td>
+                                                                }
+                                                                        </table>
+                                                                }
+                                                            </div>
+                                                }
+                                            }
                                         }
-                                    </table>
-                                }
-                            </div>
+                                        else
+                                        {
+                                                    <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                                        }
+                                        }
+                                    </div>
+                                </li>
                         }
                     }
                 }
-                else if (dataT4F.Keys.First() != "Not Found")
-                {
-                    foreach (KeyValuePair<string, Hour[]> dayInfo in dataT4F)
-                    {
-                        if (dayInfo.Key != "Not Found")
-                        {
-                            <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
-                                @{
-                                    ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
+            </ul>
 
-                                    <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
-                                    <label>
-                                        Low tides: @forecastDiv.lowTides
-                                    </label>
-                                    <label>
-                                        , High tides: @forecastDiv.highTides
-                                    </label>
-                                    <label>
-                                        , Sea Temperature: @forecastDiv.waterTemp
-                                    </label>
-                                    <table class="forecastTable">
-                                        <tr>
-                                            <th></th>
-                                            @foreach (string time in ForecastFormat.displayTimes)
-                                            {
-                                                <th>@time</th>
-                                            }
-                                        </tr>
-                                        @foreach (string s in forecastDiv.waveInfo)
+            <h2>Conditions at your favourite fishing spots</h2>
+            <ul class="favSpotList">
+                @{
+                    // this may need to change from a list. What I am aiming to do is have the conditions shown for the users favourite spots for easy comparison. This will require a loading animation while the server recieves and redirects the fishing spots forecast. This information is all passed with a JSON file for each day, for each spot, perhaps should limit to 3 spots initially.
+                    string[] favSpots = getFavSpots(User.Claims.ElementAtOrDefault(0).Value);
+                    foreach (string spot in favSpots)
+                    {
+                        if (spot != "")
+                        {
+                            //string[] checkedDays = getCheckedDays();
+                                <li name=@String.Concat("fav",spot.Replace(" ","_"))>
+                                    <h2>@spot</h2>
+                                    <div name="dayForecastDetails">
+                                        @{
+                                        Dictionary<string, Hour[]> dataSF = getForecastConditions("SF", spot);
+                                        Dictionary<string, Hour[]> dataT4F = getForecastConditions("T4F", spot);
+                                        if (dataSF.Keys.First() != "Not Found")
                                         {
-                                            <td>@s</td>
+                                            foreach (KeyValuePair<string, Hour[]> dayInfo in dataSF)
+                                            {
+                                                if (dayInfo.Key != "Not Found")
+                                                {
+                                                            <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
+                                                                @{
+                                                            ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
+                                                                        <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
+                                                                        <label>
+                                                                            Low tides: @forecastDiv.lowTides
+                                                                        </label>
+                                                                        <label>
+                                                                            , High tides: @forecastDiv.highTides
+                                                                        </label>
+                                                                        <label>
+                                                                            , Sea Temperature: @forecastDiv.waterTemp
+                                                                        </label>
+                                                                        <table class="forecastTable">
+                                                                            <tr>
+                                                                                <th></th>
+                                                                                @foreach (string time in ForecastFormat.displayTimes)
+                                                                    {
+                                                                                    <th>@time</th>
+                                                                    }
+                                                                            </tr>
+                                                                            @foreach (string s in forecastDiv.waveInfo)
+                                                                {
+                                                                                <td>@s</td>
+                                                                }
+                                                                        </table>
+                                                                }
+                                                            </div>
+                                                }
+                                            }
                                         }
-                                    </table>
-                                }
-                            </div>
+                                        else if (dataT4F.Keys.First() != "Not Found")
+                                        {
+                                            foreach (KeyValuePair<string, Hour[]> dayInfo in dataT4F)
+                                            {
+                                                if (dayInfo.Key != "Not Found")
+                                                {
+                                                            <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
+                                                                @{
+                                                            ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
+
+                                                                        <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
+                                                                        <label>
+                                                                            Low tides: @forecastDiv.lowTides
+                                                                        </label>
+                                                                        <label>
+                                                                            , High tides: @forecastDiv.highTides
+                                                                        </label>
+                                                                        <label>
+                                                                            , Sea Temperature: @forecastDiv.waterTemp
+                                                                        </label>
+                                                                        <table class="forecastTable">
+                                                                            <tr>
+                                                                                <th></th>
+                                                                                @foreach (string time in ForecastFormat.displayTimes)
+                                                                    {
+                                                                                    <th>@time</th>
+                                                                    }
+                                                                            </tr>
+                                                                            @foreach (string s in forecastDiv.waveInfo)
+                                                                {
+                                                                                <td>@s</td>
+                                                                }
+                                                                        </table>
+                                                                }
+                                                            </div>
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                                    <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                                        }
+                                        }
+                                    </div>
+                                </li>
                         }
                     }
                 }
-                else
-                {
-                    <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-                }
-            }
-        }*@
+            </ul>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <h2>Conditions at your favourite fishing spots</h2>
-
-        <ul class="favSpotList">
-            @{
-                // this may need to change from a list. What I am aiming to do is have the conditions shown for the users favourite spots for easy comparison. This will require a loading animation while the server recieves and redirects the fishing spots forecast. This information is all passed with a JSON file for each day, for each spot, perhaps should limit to 3 spots initially.
-                string[] favSpots = getFavSpots(User.Claims.ElementAtOrDefault(0).Value);
-                foreach (string spot in favSpots)
-                {
-                    if (spot != "")
-                    {
-                        //string[] checkedDays = getCheckedDays();
-                        <li name=@spot.Replace(" ","_")>
-                            <h2>@spot</h2>
-                            <div name="dayForecastDetails">
-                                @{
-                                    Dictionary<string, Hour[]> dataSF = getFavConditions("SF", spot);
-                                    Dictionary<string, Hour[]> dataT4F = getFavConditions("T4F", spot);
-                                    if (dataSF.Keys.First() != "Not Found")
-                                    {
-                                        foreach (KeyValuePair<string, Hour[]> dayInfo in dataSF)
-                                        {
-                                            if (dayInfo.Key != "Not Found")
-                                            {
-                                                <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
-                                                    @{
-                                                        ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
-                                                        <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
-                                                        <label>
-                                                            Low tides: @forecastDiv.lowTides
-                                                        </label>
-                                                        <label>
-                                                            , High tides: @forecastDiv.highTides
-                                                        </label>
-                                                        <label>
-                                                            , Sea Temperature: @forecastDiv.waterTemp
-                                                        </label>
-                                                        <table class="forecastTable">
-                                                            <tr>
-                                                                <th></th>
-                                                                @foreach (string time in ForecastFormat.displayTimes)
-                                                                {
-                                                                    <th>@time</th>
-                                                                }
-                                                            </tr>
-                                                            @foreach (string s in forecastDiv.waveInfo)
-                                                            {
-                                                                <td>@s</td>
-                                                            }
-                                                        </table>
-                                                    }
-                                                </div>
-                                            }
-                                        }
-                                    }
-                                    else if (dataT4F.Keys.First() != "Not Found")
-                                    {
-                                        foreach (KeyValuePair<string, Hour[]> dayInfo in dataT4F)
-                                        {
-                                            if (dayInfo.Key != "Not Found")
-                                            {
-                                                <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
-                                                    @{
-                                                        ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
-
-                                                        <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
-                                                        <label>
-                                                            Low tides: @forecastDiv.lowTides
-                                                        </label>
-                                                        <label>
-                                                            , High tides: @forecastDiv.highTides
-                                                        </label>
-                                                        <label>
-                                                            , Sea Temperature: @forecastDiv.waterTemp
-                                                        </label>
-                                                        <table class="forecastTable">
-                                                            <tr>
-                                                                <th></th>
-                                                                @foreach (string time in ForecastFormat.displayTimes)
-                                                                {
-                                                                    <th>@time</th>
-                                                                }
-                                                            </tr>
-                                                            @foreach (string s in forecastDiv.waveInfo)
-                                                            {
-                                                                <td>@s</td>
-                                                            }
-                                                        </table>
-                                                    }
-                                                </div>
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-                                    }
-                                }
-                            </div>
-                        </li>
-                    }
-                }
-            }
-        </ul>
-
-
-        <form id="addFav" action="~/" method="post">
-            <label>Add favourite fishing spot</label>
-            <input type="text" name="favSpot" width="50" value="" />
+            <form id="addFav" action="~/" method="post">
+                <label>Add favourite fishing spot</label>
+                <input type="text" name="favSpot" width="50" value="" />
                 <input type="hidden" name="addFavourite" value="true" />
                 <input type="submit" value="Add favourite" />
             </form>
@@ -305,24 +246,24 @@
                 <input type="text" name="rmvSpot" width="50" value="" />
                 <input type="hidden" name="rmvFavourite" value="true" />
                 <input type="submit" value="Remove favourite" />
-            </form>
+                </form>
 
         }
         else
         {
-            <h2>For tracking all of your fishing data</h2>
+                <h2>For tracking all of your fishing data</h2>
 
-            <br></br>
-            <h3>What this application is capable of:</h3>
-            <ul>
-                <li class="list">Returns weather and wave information for you favourite fishing locations</li>
-                <li class="list">Recommends best fishing days for you based on fishing history</li>
-                <li class="list">Records your fishing trips for you and the conditions</li>
-            </ul>
+                <br></br>
+                <h3>What this application is capable of:</h3>
+                <ul>
+                    <li class="list">Returns weather and wave information for you favourite fishing locations</li>
+                    <li class="list">Recommends best fishing days for you based on fishing history</li>
+                    <li class="list">Records your fishing trips for you and the conditions</li>
+                </ul>
         }
-    </div>
+        </div>
 
-</body>
+    </body>
 
-</html>
+    </html>
 

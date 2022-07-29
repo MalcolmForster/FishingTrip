@@ -39,8 +39,6 @@ namespace FishingTrip.Pages.Shared
         }
     }
 
-
-
     public class ForecastDiv
     {
         public string searchSpot { get; set; }

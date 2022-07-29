@@ -45,6 +45,22 @@ namespace FishingTrip.Pages.Shared
             }
         }
 
+        private static SqlConnection linuxConnect()
+        {
+            string MyConnectionString = _ServerConnections.linux;
+            SqlConnection cnn = new SqlConnection(MyConnectionString);
+            try
+            {
+                cnn.Open();
+                return cnn;
+            }
+            catch
+            {
+                Console.WriteLine("Failed to connect to database");
+                return null;
+            }
+        }
+
         private static void closeDB(SqlConnection cnn, SqlDataReader rdr)
         {
             if (rdr != null)
@@ -140,7 +156,7 @@ namespace FishingTrip.Pages.Shared
                     }
                 }
             }
-            else if (website == "T4F")
+            else if (website == "T4F" || website == "FTW")
             {
                 foreach (KeyValuePair<string, JsonDocument> kvp in jsonDict)
                 {
@@ -192,26 +208,75 @@ namespace FishingTrip.Pages.Shared
             return dailyForecast;
         }
 
-        public static Dictionary<string, Hour[]> getNewConditions(string website, string spot)//days may need to be used later?
+        //public static Dictionary<string, Hour[]> getNewConditions(string website, string spot)//days may need to be used later?
+        //{
+        //    string MyConnectionString = _ServerConnections.linux; //Connect to the local database
+        //    SqlDataReader rdr = null;
+        //    SqlConnection cnn = new SqlConnection();
+        //    cnn = new SqlConnection(MyConnectionString);
+        //    string query = String.Format("SELECT [dataSF] FROM favForecasts{0} WHERE [spot] = @spot", website);
+        //    SqlCommand cmd = new SqlCommand(query, cnn);
+
+        //    try
+        //    {
+        //        cmd.Connection.Open();
+        //    }
+        //    catch (SqlException ex)
+        //    {
+        //        Console.WriteLine(ex.Message);
+        //    }
+
+        //    cmd.Parameters.AddWithValue("@spot", spot);
+
+        //    var dayInfo = new Dictionary<string, Hour[]>();
+
+        //    if (cnn != null && cnn.State == ConnectionState.Closed)
+        //    {
+        //        //nothin here currently to deal with a failed connection, maybe an HTML.raw output saying fialed to connect?
+        //    }
+        //    else
+        //    {
+        //        using (rdr = cmd.ExecuteReader())
+        //        {
+        //            while (rdr.Read())
+        //            {
+        //                JsonDocument json = JsonDocument.Parse(rdr.GetString(0));
+        //                dayInfo = getDayInfo(website, json);
+        //            }
+        //        }
+        //    }
+        //    closeDB(cnn, rdr);
+        //    return dayInfo;
+        //}
+
+        public static Dictionary<string, Hour[]> getForecastConditions(string website, string spot)//days may need to be used later?
         {
-            string MyConnectionString = _ServerConnections.linux; //Connect to the local database
+            //string MyConnectionString = _ServerConnections.linux;            
+            //SqlConnection cnn = new SqlConnection(MyConnectionString);
+
+            SqlConnection cnn = linuxConnect();
             SqlDataReader rdr = null;
-            SqlConnection cnn = new SqlConnection();
-            cnn = new SqlConnection(MyConnectionString);
-            string query = String.Format("SELECT [dataSF] FROM favForecasts{0} WHERE [spot] = @spot", website);
+            string query = "";
+
+            if (website == "FTW")
+            {
+                query = "SELECT [dataSF] FROM searchForecasts WHERE [spot] = @spot";
+            } else {
+                query = String.Format("SELECT [dataSF] FROM favForecasts{0} WHERE [spot] = @spot", website);
+            }
+
             SqlCommand cmd = new SqlCommand(query, cnn);
 
-            try
-            {
-                cmd.Connection.Open();
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            //try
+            //{
+            //    cmd.Connection.Open();
+            //}
+            //catch (SqlException ex)
+            //{
+            //    Console.WriteLine(ex.Message);
+            //}
 
             cmd.Parameters.AddWithValue("@spot", spot);
-
             var dayInfo = new Dictionary<string, Hour[]>();
 
             if (cnn != null && cnn.State == ConnectionState.Closed)
@@ -229,127 +294,64 @@ namespace FishingTrip.Pages.Shared
                     }
                 }
             }
+
             closeDB(cnn, rdr);
             return dayInfo;
         }
 
-
-
-
-        public static Dictionary<string, Hour[]> getFavConditions(string website, string spot)//days may need to be used later?
+        public static void spot_Forecast_Script(string Spot, string[] days) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
         {
-            string MyConnectionString = _ServerConnections.linux;
-            SqlDataReader rdr = null;
-            SqlConnection cnn = new SqlConnection();
-            cnn = new SqlConnection(MyConnectionString);
-            string query = String.Format("SELECT [dataSF] FROM favForecasts{0} WHERE [spot] = @spot", website);
-            SqlCommand cmd = new SqlCommand(query, cnn);
 
-            try
-            {
-                cmd.Connection.Open();
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            Console.WriteLine("The script would have been engaged");
 
-            cmd.Parameters.AddWithValue("@spot", spot);
 
-            var dayInfo = new Dictionary<string, Hour[]>();
+            ////This requires the use of the the python webscraper, found in Pages\Shared\Scripts
+            //string json = "";
+            //string[] daysShort = new string[days.Length];
+            //string pyScript = "Pages\\Shared\\scripts\\FSServer.py";
 
-            if (cnn != null && cnn.State == ConnectionState.Closed)
-            {
-                //nothin here currently to deal with a failed connection, maybe an HTML.raw output saying fialed to connect?
-            }
-            else
-            {
-                using (rdr = cmd.ExecuteReader())
-                {
-                    while (rdr.Read())
-                    {
-                        JsonDocument json = JsonDocument.Parse(rdr.GetString(0));
-                        dayInfo = getDayInfo(website, json);
-                    }
-                }
-            }
-            closeDB(cnn, rdr);
-            return dayInfo;
+            //for (int i = 0; i < days.Length; i++)
+            //{
+            //    daysShort[i] = days[i].Substring(0, 3);
+            //}
+
+            //ProcessStartInfo start = new ProcessStartInfo();
+            //start.FileName = "Root to python path;";
+            ////Console.WriteLine(string.Format("{0} request {1} {2}",pyScript, "\"" + Spot + "\"", String.Join(" ", daysShort)));
+            //start.Arguments = string.Format("{0} request {1} {2}", pyScript, " Request '" + Spot + "'", String.Join(" ", daysShort));
+            //start.UseShellExecute = false;
+            //start.RedirectStandardOutput = true;
+            //Process p = new Process();
+            //p.StartInfo = start;
+            //p.Start();
+            //StreamReader reader = p.StandardOutput;
+            //json = reader.ReadToEnd();
+
+
+            ////$directory = str_replace("user", "scripts/FSServer.py", getcwd());
+
+            ////$command = ("python3 ". $directory." request \"".trim($_POST['fishSpot'])."\" ".join(" ",$_POST['days']));
+            ////$output = exec($command);
+
+            ////// $command = escapeshellcmd("python3 " . $directory." request \"" . trim($_POST['fishSpot']) ."\" ". join(" ",$_POST['days']));
+            ////// $output = shellexec($command);
+
+            ////$decoded = json_decode($output, TRUE);
+
+            ////echo $decoded["Wed"];
         }
-
-        public static string[] getCheckedDays()
-        {
-            string[] s = new string[1];
-            return s;
-        }
-
-        public static string spot_Forecast(string Spot, string[] days) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
-        {
-            //This requires the use of the the python webscraper, found in Pages\Shared\Scripts
-            string json = "";
-            string[] daysShort = new string[days.Length];
-            string pyScript = "Pages\\Shared\\scripts\\FSServer.py";
-
-            for (int i = 0; i < days.Length; i++)
-            {
-                daysShort[i] = days[i].Substring(0, 3);
-            }
-
-            ProcessStartInfo start = new ProcessStartInfo();
-            start.FileName = "Root to python path;";
-            //Console.WriteLine(string.Format("{0} request {1} {2}",pyScript, "\"" + Spot + "\"", String.Join(" ", daysShort)));
-            start.Arguments = string.Format("{0} request {1} {2}", pyScript, "\"" + Spot + "\"", String.Join(" ", daysShort));
-            start.UseShellExecute = false;
-            start.RedirectStandardOutput = true;
-            Process p = new Process();
-            p.StartInfo = start;
-            p.Start();
-            StreamReader reader = p.StandardOutput;
-            json = reader.ReadToEnd();
-
-
-            //$directory = str_replace("user", "scripts/FSServer.py", getcwd());
-
-            //$command = ("python3 ". $directory." request \"".trim($_POST['fishSpot'])."\" ".join(" ",$_POST['days']));
-            //$output = exec($command);
-
-            //// $command = escapeshellcmd("python3 " . $directory." request \"" . trim($_POST['fishSpot']) ."\" ". join(" ",$_POST['days']));
-            //// $output = shellexec($command);
-
-            //$decoded = json_decode($output, TRUE);
-
-            //echo $decoded["Wed"];
-
-            return json;
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         //This method gets all recently searched spots from the database
         public static string[] getSearchedSpots(string uId)
         {
-            SqlConnection cnn = dbConnect();
             SqlDataReader rdr = null;
+            SqlConnection cnn = linuxConnect();
 
             if (cnn != null)
             {
-                string query = "SELECT [FavSpots] FROM [dbo].[AspNetUsers] WHERE Id=@userID;";
+                string query = "SELECT [spot] FROM searchForecasts WHERE [UserName] = @userID";
                 SqlCommand cmd = new SqlCommand(query, cnn);
+
                 try
                 {
                     cmd.Parameters.AddWithValue("@userID", uId);
@@ -358,6 +360,7 @@ namespace FishingTrip.Pages.Shared
                 {
                     Console.WriteLine("Parameters failed to be added to query");
                 }
+
                 try
                 {
                     using (rdr = cmd.ExecuteReader())
@@ -371,7 +374,7 @@ namespace FishingTrip.Pages.Shared
                 }
                 catch
                 {
-                    Console.WriteLine("getFavSpots failed to execute reader");
+                    Console.WriteLine("getSearchedSpots failed to execute reader");
                 }
             }
             closeDB(cnn, rdr);
@@ -379,50 +382,47 @@ namespace FishingTrip.Pages.Shared
             return emptyString;
         }
 
-
-        
-        public static void add_Search(string spotSearched, string uId)
+        public static bool find_Spot_In_Tables(string spotSearched, string uId)
         {
-            SqlConnection cnn = dbConnect();
+            SqlConnection cnn = dbConnect(); // THIS WILL NEED TO CHANGE TO THE LINUX SERVER
             SqlDataReader rdr = null;
-            bool returnExisting = false;
+            bool spotForecastFound = false;
             string[] tableToSearch = { "[dbo].[favForecastsSF]", "[dbo].[favForecastsT4F]", "[dbo].[searchForecasts]" };
 
             foreach (string table in tableToSearch)
             {
+                //Searches each of the above tables for the spot
                 string query = "SELECT @spot FROM @db";
                 SqlCommand cmd = new SqlCommand(query, cnn);
                 cmd.Parameters.AddWithValue("@spot", spotSearched);
                 cmd.Parameters.AddWithValue("@db", table);
 
-                using (rdr = cmd.ExecuteReader())
+                using (rdr = cmd.ExecuteReader()) //execute command
                 {
-                    if (rdr.Read())
+                    if (rdr.Read()) //read response
                     {
-
-                        string[] curSearches = rdr.GetString(0).Trim('\'').Split(",");
-                        if (curSearches != null && curSearches.Length > 0)
+                        string[] curSearches = rdr.GetString(0).Trim('\'').Split(","); //trim the results
+                        if (curSearches != null && curSearches.Length > 0) // if results are found, ie does not return 0 results or null
                         {
-                            try
+                            try // try to copy the result from that table to the seachForecasts table
                             {
                                 curSearches = null;
-
                                 // if the data is found in the seachForecasts table, first check if the current user is already the one who initilised the search,
                                 // if they are then don't copy again, send message saying this is already been searched by them
                                 // if the user id is different to current user then copy the data with the current user's user ID
                                 if (table.Contains("search"))
-                                {
+                                {                                    
                                     string chkQuery = "SELECT @spot FROM @tab WHERE UserName = '@userID'";
                                     cmd = new SqlCommand(chkQuery, cnn);
                                     cmd.Parameters.AddWithValue("@spot", spotSearched);
                                     cmd.Parameters.AddWithValue("@tab", table);
                                     cmd.Parameters.AddWithValue("@userID", uId);
-                                    using (rdr = cmd.ExecuteReader())
-                                    {
-                                        curSearches = rdr.GetString(0).Trim('\'').Split(",");
-                                    }
+                                    spotForecastFound = true;
+                                    //using (rdr = cmd.ExecuteReader())
+                                    //{
+                                    //    curSearches = rdr.GetString(0).Trim('\'').Split(",");
+                                    //}
                                 }
-
                                 if (table.Contains("fav") || curSearches.Length == 0)
                                 {
                                     string cpyQuery = "INSERT INTO [dbo].[searchForecasts] (spot, dataSF) SELECT spot, dataSF FROM @tab";
@@ -433,56 +433,35 @@ namespace FishingTrip.Pages.Shared
                                     cmd = new SqlCommand(updQuery, cnn);
                                     cmd.Parameters.AddWithValue("@userID", uId);
                                     cmd.ExecuteReader();
+                                    spotForecastFound = true;
+                                    break;
                                 }
-
                             }
                             catch
                             {
                                 Console.WriteLine("Try in add_Search failed");
                             }
-                        } else
-                        {
-                            //Program continues here if the spot is not found on in the current tables for searched spot
-                            /*
-                             * 
-                             * 
-                             * This section will run the python script and add a new JSON file to the database under the spot name
-                             * 
-                             * 
-                             * 
-                             * 
-                             * 
-                             */
-
-                            string insertQuery = "INSERT INTO [dbo].[searchForecasts] (UserName, spot, dataSF) VALUES (@userID, @spot, @json)";
-                            cmd = new SqlCommand(insertQuery, cnn);
-
-                            try
-                            {
-                                using (rdr = cmd.ExecuteReader())
-                                {
-                                    if (rdr.Read())
-                                    {
-                                        curSearches = rdr.GetString(0).Trim('\'').Split(",");
-                                        foreach (string s in curSearches)
-                                        {
-                                            if (s == spotSearched)
-                                            {
-                                                //Method to return the json in the database as they already exist.
-                                                break;
-                                            }
-                                        }
-
-                                    }
-                                }
-                            }
-                            catch
-                            {
-                                Console.WriteLine("method add_Seach returned an error");
-                            }
                         }
                     }
                 }
+            }
+            closeDB(cnn, rdr);
+            return spotForecastFound;
+        }
+        
+        public static void add_Search(string spotSearched, string uId)
+        {
+            bool spot_Added= find_Spot_In_Tables(spotSearched, uId);
+            if(spot_Added == true) //If the spot has been found, do nothing
+            {
+                //let ajax refresh the div to show updated list of searched spots for the user
+
+            }
+            else //If spot has NOT been found, use python script to find it
+            {
+                //Program continues here if the spot is not found on in the current tables for searched spot
+                string[] arg = { "FTW" };
+                spot_Forecast_Script(spotSearched, arg);
             }
         }
 
@@ -511,7 +490,7 @@ namespace FishingTrip.Pages.Shared
                         if (rdr.Read())
                         {
                             string[] allSpots = rdr.GetString(0).Trim('\'').Split(",");
-                            foreach(string s in allSpots)                        
+                            //foreach (string s in allSpots)
                             return allSpots;
                         }
                     }
@@ -525,21 +504,6 @@ namespace FishingTrip.Pages.Shared
             string[] emptyString = new string[0];
             return emptyString;
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         public static void add_Favourite(string fav, string uId)
         {
@@ -584,21 +548,6 @@ namespace FishingTrip.Pages.Shared
                 Console.WriteLine("No favourites found");
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         public static void remove_Favourite(string fav, string uId)
         {

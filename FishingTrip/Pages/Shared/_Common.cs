@@ -289,8 +289,15 @@ namespace FishingTrip.Pages.Shared
                 {
                     while (rdr.Read())
                     {
-                        JsonDocument json = JsonDocument.Parse(rdr.GetString(0));
-                        dayInfo = getDayInfo(website, json);
+                        try
+                        {
+                            JsonDocument json = JsonDocument.Parse(rdr.GetString(0));
+                            dayInfo = getDayInfo(website, json);
+                        }
+                        catch
+                        {
+                            dayInfo.Add("Not Found",new Hour[0]);
+                        }
                     }
                 }
             }
@@ -365,11 +372,13 @@ namespace FishingTrip.Pages.Shared
                 {
                     using (rdr = cmd.ExecuteReader())
                     {
-                        if (rdr.Read())
+                        List<string> list = new List<string>();
+                        while (rdr.Read())
                         {
-                            string[] allSpots = rdr.GetString(0).Trim('\'').Split(",");
-                            return allSpots;
+                            list.Add(rdr.GetString(0));
                         }
+                        string[] allSpots = list.ToArray();
+                        return allSpots;
                     }
                 }
                 catch
@@ -384,56 +393,60 @@ namespace FishingTrip.Pages.Shared
 
         public static bool find_Spot_In_Tables(string spotSearched, string uId)
         {
-            SqlConnection cnn = dbConnect(); // THIS WILL NEED TO CHANGE TO THE LINUX SERVER
+            SqlConnection cnn = linuxConnect();
             SqlDataReader rdr = null;
             bool spotForecastFound = false;
-            string[] tableToSearch = { "[dbo].[favForecastsSF]", "[dbo].[favForecastsT4F]", "[dbo].[searchForecasts]" };
+            string[] tablesToSearch = { "favForecastsSF", "favForecastsT4F", "searchForecasts" };
 
-            foreach (string table in tableToSearch)
+            foreach (string table in tablesToSearch)
             {
                 //Searches each of the above tables for the spot
-                string query = "SELECT @spot FROM @db";
+                string query = String.Format("SELECT spot FROM {0} WHERE spot = @spot", table);
                 SqlCommand cmd = new SqlCommand(query, cnn);
                 cmd.Parameters.AddWithValue("@spot", spotSearched);
-                cmd.Parameters.AddWithValue("@db", table);
 
                 using (rdr = cmd.ExecuteReader()) //execute command
                 {
                     if (rdr.Read()) //read response
                     {
                         string[] curSearches = rdr.GetString(0).Trim('\'').Split(","); //trim the results
+                        rdr.Close();
+
                         if (curSearches != null && curSearches.Length > 0) // if results are found, ie does not return 0 results or null
                         {
-                            try // try to copy the result from that table to the seachForecasts table
+                            foreach (string s in curSearches) { Console.WriteLine(s); }
+
+                            try // try to copy the result from that table to the searchForecasts table
                             {
-                                curSearches = null;
+                                //curSearches = new string[0];
                                 // if the data is found in the seachForecasts table, first check if the current user is already the one who initilised the search,
                                 // if they are then don't copy again, send message saying this is already been searched by them
                                 // if the user id is different to current user then copy the data with the current user's user ID
                                 if (table.Contains("search"))
-                                {                                    
-                                    string chkQuery = "SELECT @spot FROM @tab WHERE UserName = '@userID'";
+                                {
+                                    string chkQuery = String.Format("SELECT @spot FROM {0} WHERE UserName = @userID", table);
                                     cmd = new SqlCommand(chkQuery, cnn);
                                     cmd.Parameters.AddWithValue("@spot", spotSearched);
-                                    cmd.Parameters.AddWithValue("@tab", table);
                                     cmd.Parameters.AddWithValue("@userID", uId);
                                     spotForecastFound = true;
-                                    //using (rdr = cmd.ExecuteReader())
-                                    //{
-                                    //    curSearches = rdr.GetString(0).Trim('\'').Split(",");
-                                    //}
+                                    using (rdr = cmd.ExecuteReader())
+                                    {
+                                        curSearches = rdr.GetString(0).Trim('\'').Split(",");
+                                    }
                                 }
                                 if (table.Contains("fav") || curSearches.Length == 0)
                                 {
-                                    string cpyQuery = "INSERT INTO [dbo].[searchForecasts] (spot, dataSF) SELECT spot, dataSF FROM @tab";
-                                    string updQuery = "UPDATE [dbo].[searchForecasts] SET [UserName] = '@userId' WHERE [UserName] IS NULL";
+                                    string cpyQuery = String.Format("INSERT INTO searchForecasts (spot, date_time, dataSF) SELECT spot, date_time, dataSF FROM {0} WHERE {0}.spot = @ss", table);
+                                    string updQuery = "UPDATE searchForecasts SET UserName = @userId WHERE UserName IS NULL";
                                     cmd = new SqlCommand(cpyQuery, cnn);
-                                    cmd.Parameters.AddWithValue("@tab", table);
-                                    cmd.ExecuteReader();
-                                    cmd = new SqlCommand(updQuery, cnn);
-                                    cmd.Parameters.AddWithValue("@userID", uId);
-                                    cmd.ExecuteReader();
+                                    cmd.Parameters.AddWithValue("@ss", spotSearched);
+                                    cmd.ExecuteNonQuery();
+                                    cmd.Dispose();
+                                    SqlCommand cmd2 = new SqlCommand(updQuery, cnn);
+                                    cmd2.Parameters.AddWithValue("@userID", uId);
+                                    cmd2.ExecuteNonQuery();
                                     spotForecastFound = true;
+                                    closeDB(cnn, rdr);
                                     break;
                                 }
                             }
@@ -448,21 +461,61 @@ namespace FishingTrip.Pages.Shared
             closeDB(cnn, rdr);
             return spotForecastFound;
         }
-        
+
+        //public static bool findSpotInTable(string table, string uId)
+        //{
+        //    SqlConnection cnn = linuxConnect();
+        //    SqlDataReader rdr = null;
+        //    bool spotForecastFound = false;
+
+        //    bool found = false;
+
+
+
+        //    return found;
+        //}
+        public static void checkDBForSearch() //draft class to check if forecast info exists in the searchForecasts database. Possibly run every 10 seconds etc to recheck for new searches
+        {
+            //SqlConnection cnn = linuxConnect();
+            //SqlDataReader rdr = null;
+            //string findDuplicate = String.Format("SELECT * FROM searchForecasts WHERE spot = '{0}' AND UserName = '{1}'", spotSearched, uId);
+
+            //bool spot_Added = find_Spot_In_Tables(spotSearched, uId); //See if the spot exists on the table CHANGED TO SEE IF DATA EXISTS FOR THAT SPECIFIC SPOT ON searchForecast
+
+            //string[] arg = { "FTW" };
+            //spot_Forecast_Script(spotSearched, arg);
+
+        }
+
+
         public static void add_Search(string spotSearched, string uId)
         {
-            bool spot_Added= find_Spot_In_Tables(spotSearched, uId);
-            if(spot_Added == true) //If the spot has been found, do nothing
+            SqlConnection cnn = linuxConnect();
+            SqlDataReader rdr = null;
+            string findDuplicate = String.Format("SELECT * FROM searchForecasts WHERE spot = '{0}' AND UserName = '{1}'",spotSearched, uId);
+            Console.WriteLine(findDuplicate);
+            SqlCommand fndDup = new SqlCommand(findDuplicate, cnn);
+            rdr = fndDup.ExecuteReader();
+            if (!rdr.Read()) //read response
             {
-                //let ajax refresh the div to show updated list of searched spots for the user
+                rdr.Close();
+                DateTime nowDate = DateTime.Now;
+                string qry = String.Format("INSERT INTO searchForecasts (spot, date_time, UserName) VALUES ('{0}', '{1}', '{2}')", spotSearched, nowDate.ToString("yyyy-MM-dd HH:mm:ss.fff"), uId);
 
+                SqlCommand newSearch = new SqlCommand(qry, cnn);
+                newSearch.ExecuteNonQuery();
+                closeDB(cnn, rdr);
+                
             }
-            else //If spot has NOT been found, use python script to find it
+            else
             {
-                //Program continues here if the spot is not found on in the current tables for searched spot
-                string[] arg = { "FTW" };
-                spot_Forecast_Script(spotSearched, arg);
+                Console.WriteLine("User has already searched for " +spotSearched);
+                rdr.Close();
             }
+            closeDB(cnn, rdr);
+                //check if spot already exists in the searchSpot table for that user, if not add new row for that spot with null as other values
+
+                //look through the search tables and fav tables to find the results
         }
 
         // This method returns a list of spots the use has on their favourite list

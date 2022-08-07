@@ -350,6 +350,23 @@ namespace FishingTrip.Pages.Shared
             ////echo $decoded["Wed"];
         }
 
+        public static void delSearch(string spot, string uId)
+        {
+            SqlConnection cnn = linuxConnect();
+            string query = "DELETE FROM searchForecasts WHERE [spot] = @spot AND [UserName] = @userID";
+            SqlCommand cmd = new SqlCommand(query, cnn);
+            cmd.Parameters.AddWithValue("@spot", spot);
+            cmd.Parameters.AddWithValue("@userID", uId);
+
+            try
+            {
+                cmd.ExecuteNonQuery();
+            } catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+
         //This method gets all recently searched spots from the database
         public static string[] getSearchedSpots(string uId)
         {
@@ -543,7 +560,7 @@ namespace FishingTrip.Pages.Shared
                 }
             } else
             {
-                //add job to run python script
+                //add job to run python script, use a checker on a loop every 5 seconds to see if any dataSF entrys are null in searchForecast table.
             }
 
 
@@ -559,7 +576,6 @@ namespace FishingTrip.Pages.Shared
             closeDB(cnn, rdr);
 
         }
-
 
         public static void add_Search(string spotSearched, string uId)
         {

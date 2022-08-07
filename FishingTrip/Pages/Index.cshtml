@@ -41,15 +41,15 @@
                     {
                         if (week[i] != "")
                         {
-                                            <label>&nbsp&nbsp&nbsp&nbsp</label>
-                                            <label>@week[i]:</label>
+                                                <label>&nbsp&nbsp&nbsp&nbsp</label>
+                                                <label>@week[i]:</label>
                             if (i < 3)
                             {
-                                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] checked />
+                                                    <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] checked />
                             }
                             else
                             {
-                                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] />
+                                                    <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] />
                             }
                         }
                     }
@@ -75,10 +75,14 @@
                     {
                         if (spot != "")
                         {
-                            <li style="background-color: lightslategrey;" name=@String.Concat("fav",spot.Replace(" ","_"))>
-                                <h2>@spot</h2>
-                                <div name="dayForecastDetails">
-                                    @{
+                                <li style="background-color: lightslategrey;" name=@String.Concat("fav",spot.Replace(" ","_"))>
+                                    <h2 style="display:inline;">@spot</h2>
+                                    <form method="post" asp-page-handler="RemoveSearch">
+                                        <input type="hidden" name="whichSpot" value="@spot"/>
+                                        <button type="submit">Remove Search</button>
+                                    </form>
+                                    <div name="dayForecastDetails">
+                                        @{
                                         Dictionary<string, Hour[]> usersSearchedSpots = getForecastConditions("FTW", spot, User.Claims.ElementAtOrDefault(0).Value);
                                         //Dictionary<string, Hour[]> dataT4F = getFavConditions("T4F", spot);
 
@@ -88,45 +92,45 @@
                                             {
                                                 if (dayInfo.Key != "Not Found")
                                                 {
-                                                    <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
-                                                        @{
+                                                            <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
+                                                                @{
                                                             ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
-                                                            <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
-                                                            <label>
-                                                                Low tides: @forecastDiv.lowTides
-                                                            </label>
-                                                            <label>
-                                                                , High tides: @forecastDiv.highTides
-                                                            </label>
-                                                            <label>
-                                                                , Sea Temperature: @forecastDiv.waterTemp
-                                                            </label>
-                                                            <table class="forecastTable">
-                                                                <tr>
-                                                                    <th></th>
-                                                                    @foreach (string time in ForecastFormat.displayTimes)
+                                                                        <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
+                                                                        <label>
+                                                                            Low tides: @forecastDiv.lowTides
+                                                                        </label>
+                                                                        <label>
+                                                                            , High tides: @forecastDiv.highTides
+                                                                        </label>
+                                                                        <label>
+                                                                            , Sea Temperature: @forecastDiv.waterTemp
+                                                                        </label>
+                                                                        <table class="forecastTable">
+                                                                            <tr>
+                                                                                <th></th>
+                                                                                @foreach (string time in ForecastFormat.displayTimes)
                                                                     {
-                                                                        <th> @time </th>
+                                                                                    <th> @time </th>
                                                                     }
-                                                                </tr>
-                                                                @foreach (string s in forecastDiv.waveInfo)
+                                                                            </tr>
+                                                                            @foreach (string s in forecastDiv.waveInfo)
                                                                 {
-                                                                    <td>@s</td>
+                                                                                <td>@s</td>
                                                                 }
-                                                            </table>
-                                                        }
-                                                    </div>
+                                                                        </table>
+                                                                }
+                                                            </div>
                                                 }
                                             }
                                         }
                                         else
                                         {
                                             //This creates css loading animation
-                                            <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                                                    <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
                                         }
-                                    }
-                                </div>
-                            </li>
+                                        }
+                                    </div>
+                                </li>
                         }
                     }
                 }
@@ -142,10 +146,10 @@
                         if (spot != "")
                         {
                             //string[] checkedDays = getCheckedDays();
-                                <li name=@String.Concat("fav",spot.Replace(" ","_"))>
-                                    <h2>@spot</h2>
-                                    <div name="dayForecastDetails">
-                                        @{
+                                    <li name=@String.Concat("fav",spot.Replace(" ","_"))>
+                                        <h2>@spot</h2>
+                                        <div name="dayForecastDetails">
+                                            @{
                                         Dictionary<string, Hour[]> dataSF = getForecastConditions("SF", spot,"");
                                         Dictionary<string, Hour[]> dataT4F = getForecastConditions("T4F", spot,"");
                                         if (dataSF.Keys.First() != "Not Found")
@@ -154,34 +158,34 @@
                                             {
                                                 if (dayInfo.Key != "Not Found")
                                                 {
-                                                            <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
-                                                                @{
+                                                                    <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
+                                                                        @{
                                                             ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
-                                                                        <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
-                                                                        <label>
-                                                                            Low tides: @forecastDiv.lowTides
-                                                                        </label>
-                                                                        <label>
-                                                                            , High tides: @forecastDiv.highTides
-                                                                        </label>
-                                                                        <label>
-                                                                            , Sea Temperature: @forecastDiv.waterTemp
-                                                                        </label>
-                                                                        <table class="forecastTable">
-                                                                            <tr>
-                                                                                <th></th>
-                                                                                @foreach (string time in ForecastFormat.displayTimes)
+                                                                                    <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
+                                                                                    <label>
+                                                                                        Low tides: @forecastDiv.lowTides
+                                                                                    </label>
+                                                                                    <label>
+                                                                                        , High tides: @forecastDiv.highTides
+                                                                                    </label>
+                                                                                    <label>
+                                                                                        , Sea Temperature: @forecastDiv.waterTemp
+                                                                                    </label>
+                                                                                    <table class="forecastTable">
+                                                                                        <tr>
+                                                                                            <th></th>
+                                                                                            @foreach (string time in ForecastFormat.displayTimes)
                                                                     {
-                                                                                    <th>@time</th>
+                                                                                                <th>@time</th>
                                                                     }
-                                                                            </tr>
-                                                                            @foreach (string s in forecastDiv.waveInfo)
+                                                                                        </tr>
+                                                                                        @foreach (string s in forecastDiv.waveInfo)
                                                                 {
-                                                                                <td>@s</td>
+                                                                                            <td>@s</td>
                                                                 }
-                                                                        </table>
-                                                                }
-                                                            </div>
+                                                                                    </table>
+                                                                        }
+                                                                    </div>
                                                 }
                                             }
                                         }
@@ -191,45 +195,45 @@
                                             {
                                                 if (dayInfo.Key != "Not Found")
                                                 {
-                                                            <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
-                                                                @{
+                                                                    <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
+                                                                        @{
                                                             ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
 
-                                                                        <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
-                                                                        <label>
-                                                                            Low tides: @forecastDiv.lowTides
-                                                                        </label>
-                                                                        <label>
-                                                                            , High tides: @forecastDiv.highTides
-                                                                        </label>
-                                                                        <label>
-                                                                            , Sea Temperature: @forecastDiv.waterTemp
-                                                                        </label>
-                                                                        <table class="forecastTable">
-                                                                            <tr>
-                                                                                <th></th>
-                                                                                @foreach (string time in ForecastFormat.displayTimes)
+                                                                                    <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
+                                                                                    <label>
+                                                                                        Low tides: @forecastDiv.lowTides
+                                                                                    </label>
+                                                                                    <label>
+                                                                                        , High tides: @forecastDiv.highTides
+                                                                                    </label>
+                                                                                    <label>
+                                                                                        , Sea Temperature: @forecastDiv.waterTemp
+                                                                                    </label>
+                                                                                    <table class="forecastTable">
+                                                                                        <tr>
+                                                                                            <th></th>
+                                                                                            @foreach (string time in ForecastFormat.displayTimes)
                                                                     {
-                                                                                    <th>@time</th>
+                                                                                                <th>@time</th>
                                                                     }
-                                                                            </tr>
-                                                                            @foreach (string s in forecastDiv.waveInfo)
+                                                                                        </tr>
+                                                                                        @foreach (string s in forecastDiv.waveInfo)
                                                                 {
-                                                                                <td>@s</td>
+                                                                                            <td>@s</td>
                                                                 }
-                                                                        </table>
-                                                                }
-                                                            </div>
+                                                                                    </table>
+                                                                        }
+                                                                    </div>
                                                 }
                                             }
                                         }
                                         else
                                         {
-                                                    <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                                                            <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
                                         }
-                                        }
-                                    </div>
-                                </li>
+                                            }
+                                        </div>
+                                    </li>
                         }
                     }
                 }

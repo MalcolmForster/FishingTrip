@@ -41,5 +41,11 @@ namespace FishingTrip.Pages
                 add_Search(Request.Form["newSpotInput"], User.Claims.ElementAtOrDefault(0).Value);
             }
         }
+
+        public void OnPostRemoveSearch()
+        {
+            string whichSpot = Request.Form["whichSpot"];
+            delSearch(whichSpot, User.Claims.ElementAtOrDefault(0).Value);
+        }
     }
 }

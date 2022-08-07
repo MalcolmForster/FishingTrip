@@ -187,7 +187,7 @@ namespace FishingTrip.Pages.Shared
                                 newHour.WaveDirection = kvp2.Value.RootElement.GetProperty("Wave Direction").ToString();
                                 //newHour.Winddirection = kvp2.Value.RootElement.GetProperty("Wind direction").ToString();
                                 newHour.WaterTemperature = kvp2.Value.RootElement.GetProperty("Sea Temperature").ToString();
-                                newHour.FishActivity = kvp2.Value.RootElement.GetProperty("Fish Activity").ToString();
+                                //newHour.FishActivity = kvp2.Value.RootElement.GetProperty("Fish Activity").ToString();
                                 //Add the hour to the hour list for the day
                                 hourList.Add(newHour);
                             }
@@ -249,7 +249,7 @@ namespace FishingTrip.Pages.Shared
         //    return dayInfo;
         //}
 
-        public static Dictionary<string, Hour[]> getForecastConditions(string website, string spot)//days may need to be used later?
+        public static Dictionary<string, Hour[]> getForecastConditions(string website, string spot, string uId)//days may need to be used later?
         {
             //string MyConnectionString = _ServerConnections.linux;            
             //SqlConnection cnn = new SqlConnection(MyConnectionString);
@@ -260,7 +260,7 @@ namespace FishingTrip.Pages.Shared
 
             if (website == "FTW")
             {
-                query = "SELECT [dataSF] FROM searchForecasts WHERE [spot] = @spot";
+                query = "SELECT [dataSF] FROM [dbo].[searchForecasts] WHERE [spot] = @spot AND UserName = @user";
             } else {
                 query = String.Format("SELECT [dataSF] FROM favForecasts{0} WHERE [spot] = @spot", website);
             }
@@ -277,6 +277,7 @@ namespace FishingTrip.Pages.Shared
             //}
 
             cmd.Parameters.AddWithValue("@spot", spot);
+            cmd.Parameters.AddWithValue("@user", uId);
             var dayInfo = new Dictionary<string, Hour[]>();
 
             if (cnn != null && cnn.State == ConnectionState.Closed)
@@ -291,12 +292,13 @@ namespace FishingTrip.Pages.Shared
                     {
                         try
                         {
+                            //rdr.GetString();
                             JsonDocument json = JsonDocument.Parse(rdr.GetString(0));
                             dayInfo = getDayInfo(website, json);
                         }
                         catch
                         {
-                            dayInfo.Add("Not Found",new Hour[0]);
+                            dayInfo.Add("Not Found", new Hour[0]);
                         }
                     }
                 }
@@ -474,16 +476,87 @@ namespace FishingTrip.Pages.Shared
 
         //    return found;
         //}
-        public static void checkDBForSearch() //draft class to check if forecast info exists in the searchForecasts database. Possibly run every 10 seconds etc to recheck for new searches
+        public static void checkDBsForSearch(string spotSearched, string uId) //draft class to check if forecast info exists in the searchForecasts database. Possibly run every 10 seconds etc to recheck for new searches
         {
-            //SqlConnection cnn = linuxConnect();
-            //SqlDataReader rdr = null;
-            //string findDuplicate = String.Format("SELECT * FROM searchForecasts WHERE spot = '{0}' AND UserName = '{1}'", spotSearched, uId);
+            SqlConnection cnn = linuxConnect();
+            SqlDataReader rdr = null;
+            SqlCommand cmd = new SqlCommand();
+
+            string updateTable = "";
+            string forecast = null;
+            string findDup = null;
+
+            //PLACES TO CHECK searchForecasts (for any user), favForecastsSF, fav ForecastsT4F
+
+            //Checking searchForecasts for any user
+            findDup = ("SELECT dataSF FROM searchForecasts WHERE spot = @spot AND dataSF IS NOT NULL and UserName != @user ORDER BY date_time DESC");
+            cmd = new SqlCommand(findDup, cnn);
+            cmd.Parameters.AddWithValue("@spot", spotSearched);
+            cmd.Parameters.AddWithValue("@user", uId);
+            forecast = (String)cmd.ExecuteScalar();
+
+            //See if the spot is on the SF table
+            if(forecast == null)
+            {
+                findDup = ("SELECT dataSF FROM favForecastsSF WHERE spot = @spot");
+                cmd = new SqlCommand(findDup, cnn);
+                cmd.Parameters.AddWithValue("@spot", spotSearched);
+                forecast = (String)cmd.ExecuteScalar();
+                
+
+                if (forecast != null && (forecast.IndexOf("Not found") != -1))
+                {
+                    forecast = null;
+                }
+            }
+
+            // See if the spot is on the T4F table
+            if (forecast == null)
+            {
+                findDup = ("SELECT dataSF FROM favForecastsT4F WHERE spot = @spot");
+                cmd = new SqlCommand(findDup, cnn);
+                cmd.Parameters.AddWithValue("@spot", spotSearched);
+                forecast = (String)cmd.ExecuteScalar();
+
+                if (forecast != null && (forecast.IndexOf("Not found") != -1))
+                {
+                    forecast = null;
+                }
+            }
+
+            if (forecast != null)
+            {
+                //UPDATE WITH THE NEW FORECAST
+                updateTable = "UPDATE searchForecasts SET dataSF = @forecast WHERE spot = @spot AND UserName = @user";
+                SqlCommand update = new SqlCommand(updateTable, cnn);
+                update.Parameters.AddWithValue("@forecast", forecast);
+                update.Parameters.AddWithValue("@spot", spotSearched);
+                update.Parameters.AddWithValue("@user", uId);
+                try
+                {
+                    update.ExecuteNonQuery();
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("She failed:" + ex);
+                }
+            } else
+            {
+                //add job to run python script
+            }
+
+
+            //}
+            // }
+
 
             //bool spot_Added = find_Spot_In_Tables(spotSearched, uId); //See if the spot exists on the table CHANGED TO SEE IF DATA EXISTS FOR THAT SPECIFIC SPOT ON searchForecast
 
             //string[] arg = { "FTW" };
             //spot_Forecast_Script(spotSearched, arg);
+
+            closeDB(cnn, rdr);
 
         }
 
@@ -493,7 +566,7 @@ namespace FishingTrip.Pages.Shared
             SqlConnection cnn = linuxConnect();
             SqlDataReader rdr = null;
             string findDuplicate = String.Format("SELECT * FROM searchForecasts WHERE spot = '{0}' AND UserName = '{1}'",spotSearched, uId);
-            Console.WriteLine(findDuplicate);
+            //Console.WriteLine(findDuplicate);
             SqlCommand fndDup = new SqlCommand(findDuplicate, cnn);
             rdr = fndDup.ExecuteReader();
             if (!rdr.Read()) //read response
@@ -501,7 +574,6 @@ namespace FishingTrip.Pages.Shared
                 rdr.Close();
                 DateTime nowDate = DateTime.Now;
                 string qry = String.Format("INSERT INTO searchForecasts (spot, date_time, UserName) VALUES ('{0}', '{1}', '{2}')", spotSearched, nowDate.ToString("yyyy-MM-dd HH:mm:ss.fff"), uId);
-
                 SqlCommand newSearch = new SqlCommand(qry, cnn);
                 newSearch.ExecuteNonQuery();
                 closeDB(cnn, rdr);
@@ -512,6 +584,7 @@ namespace FishingTrip.Pages.Shared
                 Console.WriteLine("User has already searched for " +spotSearched);
                 rdr.Close();
             }
+            checkDBsForSearch(spotSearched, uId);
             closeDB(cnn, rdr);
                 //check if spot already exists in the searchSpot table for that user, if not add new row for that spot with null as other values
 

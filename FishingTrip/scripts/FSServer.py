@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 import mysql.connector
 import pyodbc
 import FSEngine
@@ -126,10 +127,10 @@ if request == "backup":
         T4FResults = json.dumps(T4FhourData)
 
         if json.loads(FSResults) == False:
-            FSResults=json.dumps({"Spot not found":"On SurfForecast"})
+            FSResults=json.dumps({"Spot not found":"On SurfForecast"}) #TESTING TO SEE IF CAN INSERT NULL INTO THE RESULTS INSTEAD OF THIS
         
         if json.loads(T4FResults) == False:
-            T4FResults=json.dumps({"Spot not found":"On Tides4Fishing"}) 
+            T4FResults=json.dumps({"Spot not found":"On Tides4Fishing"}) #TESTING TO SEE IF CAN INSERT NULL INTO THE RESULTS INSTEAD OF THIS
 
         cursor = mysqlDB.cursor()
         try:
@@ -138,16 +139,6 @@ if request == "backup":
         except:
             print("Failed to add json information for '%s'"% (spot,))
         cursor.close()
-
-
-
-
-
-
-
-
-
-
         
 
 elif request == "request":

@@ -79,7 +79,7 @@
                                 <h2>@spot</h2>
                                 <div name="dayForecastDetails">
                                     @{
-                                        Dictionary<string, Hour[]> usersSearchedSpots = getForecastConditions("FTW", spot);
+                                        Dictionary<string, Hour[]> usersSearchedSpots = getForecastConditions("FTW", spot, User.Claims.ElementAtOrDefault(0).Value);
                                         //Dictionary<string, Hour[]> dataT4F = getFavConditions("T4F", spot);
 
                                         if (usersSearchedSpots.Count() > 0 && usersSearchedSpots.Keys.First() != "Not Found")
@@ -121,6 +121,7 @@
                                         }
                                         else
                                         {
+                                            //This creates css loading animation
                                             <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
                                         }
                                     }
@@ -145,8 +146,8 @@
                                     <h2>@spot</h2>
                                     <div name="dayForecastDetails">
                                         @{
-                                        Dictionary<string, Hour[]> dataSF = getForecastConditions("SF", spot);
-                                        Dictionary<string, Hour[]> dataT4F = getForecastConditions("T4F", spot);
+                                        Dictionary<string, Hour[]> dataSF = getForecastConditions("SF", spot,"");
+                                        Dictionary<string, Hour[]> dataT4F = getForecastConditions("T4F", spot,"");
                                         if (dataSF.Keys.First() != "Not Found")
                                         {
                                             foreach (KeyValuePair<string, Hour[]> dayInfo in dataSF)

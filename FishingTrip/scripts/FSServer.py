@@ -147,41 +147,32 @@ elif request == "request":
     reqRetSF = []
     reqRetT4F =[]
     del days[0:3]
+    resultsFound = False
     fullWeekResults = False
     if (days[0] == "FTW"): #stands for fishing trip website :)
         fullWeekResults = True
         days = getWeekFromToday()       
 
-    reqRetSF=""
+    reqRet=""
     for day in days:        
         data_soup = FSEngine.surfForecast(day,spot)        
         FSResults = checkJSON(data_soup,"Surf-forecast")
-        # if data_soup != 0:      
-        #     FSResults = json.dumps(data_soup)
-        # else:
-        #     FSResults = "{\"Spot\":\"Not found on Surf-forecast\"}"
-        #     break
         if (FSResults.find("Spot") == -1):
-            reqRetSF = (reqRetSF+"\""+day+"\":"+FSResults)
+            if day != days[0]:
+                reqRet = reqRet+","
+            reqRet = (reqRet+"\""+day+"\":"+FSResults)
+            resultsFound = True
         else:
-            reqRetSF = (reqRetSF + FSResults)
+            reqRet = (reqRet + FSResults)
             break
-    #break #<-------------------------------------------------BREAK ON THIS LINE IS FOR TESTING ONLY, LIMITS TO ONE FISHING SPOT!------------------------------------------------
+    reqRet = "{"+reqRet+"}"
     if fullWeekResults == True:
-        reqRetT4F = checkJSON(FSEngine.tides4fishing(spot),"Tides4Fishing")
-        dt_string = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        # if(json.loads(reqRetSF)):
-        #     print("SF works")
-        # if(json.loads(reqRetT4F)):
-        #     print("T4F works")
         sqlCursor = mssqlDB.cursor()
-        # sqlCursor.execute("""INSERT INTO spotForecastsSF (spot,date_time, dataSF) VALUES ('%s', '%s','%s')"""% (spot, dt_string, reqRetSF))
-        # sqlCursor.execute("""INSERT INTO spotForecastsT4F (spot,date_time, dataSF) VALUES ('%s', '%s','%s')"""% (spot, dt_string, reqRetT4F)) 
-        if reqRetSF.__contains__("Not Found"):
+        if resultsFound == False:
+            reqRetT4F = checkJSON(FSEngine.tides4fishing(spot),"Tides4Fishing")
+            dt_string = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             reqRet = reqRetT4F
-        else:
-            reqRet = reqRetSF
-        sqlCursor.execute("""INSERT INTO spotForecasts (spot, date_time, dataSF) VALUES ('%s', '%s','%s')"""% (spot, dt_string, reqRet)) 
+        sqlCursor.execute("UPDATE searchForecasts SET dataSF = '%s' WHERE spot = '%s'"% (reqRet, spot)) 
         sqlCursor.close()
     else:
         for day in days:

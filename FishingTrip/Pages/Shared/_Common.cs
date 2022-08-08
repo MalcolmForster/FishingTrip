@@ -308,46 +308,39 @@ namespace FishingTrip.Pages.Shared
             return dayInfo;
         }
 
-        public static void spot_Forecast_Script(string Spot, string[] days) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
+        public async static Task<int> spot_Forecast_Script(string Spot) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
         {
+            //This requires the use of the the python webscraper, found in Pages\Shared\Scripts
+            string json = "";
+            
 
-            Console.WriteLine("The script would have been engaged");
+            ProcessStartInfo start = new ProcessStartInfo();
+            string pyScript = "add path to python script here";
+            start.FileName = "add python path here";
 
+            //Console.WriteLine(string.Format("{0} request {1} {2}",pyScript, "\"" + Spot + "\"", String.Join(" ", daysShort)));
+            //Console.WriteLine(string.Format("\"{0}\" request '{1}' '{2}'", pyScript, Spot, "FTW"));
+            start.Arguments = string.Format("\"{0}\" request \"{1}\" {2}", pyScript, Spot, "FTW");
+            start.UseShellExecute = false;
+            start.RedirectStandardOutput = true;
+            Process p = new Process();
+            p.StartInfo = start;
+            p.Start();
+            StreamReader reader = p.StandardOutput;
+            json = reader.ReadToEnd();
 
-            ////This requires the use of the the python webscraper, found in Pages\Shared\Scripts
-            //string json = "";
-            //string[] daysShort = new string[days.Length];
-            //string pyScript = "Pages\\Shared\\scripts\\FSServer.py";
+            //$directory = str_replace("user", "scripts/FSServer.py", getcwd());
 
-            //for (int i = 0; i < days.Length; i++)
-            //{
-            //    daysShort[i] = days[i].Substring(0, 3);
-            //}
+            //$command = ("python3 ". $directory." request \"".trim($_POST['fishSpot'])."\" ".join(" ",$_POST['days']));
+            //$output = exec($command);
 
-            //ProcessStartInfo start = new ProcessStartInfo();
-            //start.FileName = "Root to python path;";
-            ////Console.WriteLine(string.Format("{0} request {1} {2}",pyScript, "\"" + Spot + "\"", String.Join(" ", daysShort)));
-            //start.Arguments = string.Format("{0} request {1} {2}", pyScript, " Request '" + Spot + "'", String.Join(" ", daysShort));
-            //start.UseShellExecute = false;
-            //start.RedirectStandardOutput = true;
-            //Process p = new Process();
-            //p.StartInfo = start;
-            //p.Start();
-            //StreamReader reader = p.StandardOutput;
-            //json = reader.ReadToEnd();
+            //// $command = escapeshellcmd("python3 " . $directory." request \"" . trim($_POST['fishSpot']) ."\" ". join(" ",$_POST['days']));
+            //// $output = shellexec($command);
 
+            //$decoded = json_decode($output, TRUE);
 
-            ////$directory = str_replace("user", "scripts/FSServer.py", getcwd());
-
-            ////$command = ("python3 ". $directory." request \"".trim($_POST['fishSpot'])."\" ".join(" ",$_POST['days']));
-            ////$output = exec($command);
-
-            ////// $command = escapeshellcmd("python3 " . $directory." request \"" . trim($_POST['fishSpot']) ."\" ". join(" ",$_POST['days']));
-            ////// $output = shellexec($command);
-
-            ////$decoded = json_decode($output, TRUE);
-
-            ////echo $decoded["Wed"];
+            //echo $decoded["Wed"];
+            return 1;
         }
 
         public static void delSearch(string spot, string uId)
@@ -493,7 +486,8 @@ namespace FishingTrip.Pages.Shared
 
         //    return found;
         //}
-        public static void checkDBsForSearch(string spotSearched, string uId) //draft class to check if forecast info exists in the searchForecasts database. Possibly run every 10 seconds etc to recheck for new searches
+
+        public static async void checkDBsForSearch(string spotSearched, string uId) //draft class to check if forecast info exists in the searchForecasts database. Possibly run every 10 seconds etc to recheck for new searches
         {
             SqlConnection cnn = linuxConnect();
             SqlDataReader rdr = null;
@@ -560,7 +554,10 @@ namespace FishingTrip.Pages.Shared
                 }
             } else
             {
+
+                var task1 = await spot_Forecast_Script(spotSearched);
                 //add job to run python script, use a checker on a loop every 5 seconds to see if any dataSF entrys are null in searchForecast table.
+               
             }
 
 

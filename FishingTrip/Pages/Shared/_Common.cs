@@ -4,7 +4,7 @@ using System.Web;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text.Json;
-using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FishingTrip.Pages.Shared
 {
@@ -160,7 +160,7 @@ namespace FishingTrip.Pages.Shared
             {
                 foreach (KeyValuePair<string, JsonDocument> kvp in jsonDict)
                 {
-                    if (kvp.Key != "Spot")
+                    if (kvp.Key != "Spot not found")
                     {
                         //String here is the Day
                         var hoursForDay = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>(kvp.Value);
@@ -200,7 +200,7 @@ namespace FishingTrip.Pages.Shared
                     else
                     {
                         Hour[] newHour = new Hour[0];
-                        dailyForecast.Add("Not Found", newHour);
+                        dailyForecast.Add("Spot not found", newHour);
                     }
 
                 }
@@ -290,16 +290,17 @@ namespace FishingTrip.Pages.Shared
                 {
                     while (rdr.Read())
                     {
+                        //rdr.GetString();
                         try
                         {
-                            //rdr.GetString();
                             JsonDocument json = JsonDocument.Parse(rdr.GetString(0));
                             dayInfo = getDayInfo(website, json);
-                        }
+                        }               
                         catch
                         {
-                            dayInfo.Add("Not Found", new Hour[0]);
-                        }
+                            Hour[] newHour = new Hour[0];
+                            dayInfo.Add("ToBeFound", newHour);
+                        }                           
                     }
                 }
             }
@@ -308,18 +309,17 @@ namespace FishingTrip.Pages.Shared
             return dayInfo;
         }
 
-        public async static Task<int> spot_Forecast_Script(string Spot) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
+        public static async void spot_Forecast_Script(string Spot) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
         {
+            Console.WriteLine("Script is activated");
             //This requires the use of the the python webscraper, found in Pages\Shared\Scripts
-            string json = "";
-            
+            string json = "";            
 
             ProcessStartInfo start = new ProcessStartInfo();
-            string pyScript = "add path to python script here";
-            start.FileName = "add python path here";
 
-            //Console.WriteLine(string.Format("{0} request {1} {2}",pyScript, "\"" + Spot + "\"", String.Join(" ", daysShort)));
-            //Console.WriteLine(string.Format("\"{0}\" request '{1}' '{2}'", pyScript, Spot, "FTW"));
+            string pyScript = "location of python script";
+            start.FileName = "location of python exe";
+
             start.Arguments = string.Format("\"{0}\" request \"{1}\" {2}", pyScript, Spot, "FTW");
             start.UseShellExecute = false;
             start.RedirectStandardOutput = true;
@@ -340,7 +340,6 @@ namespace FishingTrip.Pages.Shared
             //$decoded = json_decode($output, TRUE);
 
             //echo $decoded["Wed"];
-            return 1;
         }
 
         public static void delSearch(string spot, string uId)
@@ -487,7 +486,7 @@ namespace FishingTrip.Pages.Shared
         //    return found;
         //}
 
-        public static async void checkDBsForSearch(string spotSearched, string uId) //draft class to check if forecast info exists in the searchForecasts database. Possibly run every 10 seconds etc to recheck for new searches
+        public static void checkDBsForSearch(string spotSearched, string uId) //draft class to check if forecast info exists in the searchForecasts database. Possibly run every 10 seconds etc to recheck for new searches
         {
             SqlConnection cnn = linuxConnect();
             SqlDataReader rdr = null;
@@ -546,32 +545,19 @@ namespace FishingTrip.Pages.Shared
                 try
                 {
                     update.ExecuteNonQuery();
-
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine("She failed:" + ex);
                 }
-            } else
-            {
-
-                var task1 = await spot_Forecast_Script(spotSearched);
-                //add job to run python script, use a checker on a loop every 5 seconds to see if any dataSF entrys are null in searchForecast table.
-               
             }
-
 
             //}
             // }
-
-
             //bool spot_Added = find_Spot_In_Tables(spotSearched, uId); //See if the spot exists on the table CHANGED TO SEE IF DATA EXISTS FOR THAT SPECIFIC SPOT ON searchForecast
-
             //string[] arg = { "FTW" };
             //spot_Forecast_Script(spotSearched, arg);
-
             closeDB(cnn, rdr);
-
         }
 
         public static void add_Search(string spotSearched, string uId)
@@ -589,19 +575,17 @@ namespace FishingTrip.Pages.Shared
                 string qry = String.Format("INSERT INTO searchForecasts (spot, date_time, UserName) VALUES ('{0}', '{1}', '{2}')", spotSearched, nowDate.ToString("yyyy-MM-dd HH:mm:ss.fff"), uId);
                 SqlCommand newSearch = new SqlCommand(qry, cnn);
                 newSearch.ExecuteNonQuery();
-                closeDB(cnn, rdr);
-                
+                closeDB(cnn, rdr);                
             }
             else
             {
                 Console.WriteLine("User has already searched for " +spotSearched);
                 rdr.Close();
             }
-            checkDBsForSearch(spotSearched, uId);
+            
             closeDB(cnn, rdr);
-                //check if spot already exists in the searchSpot table for that user, if not add new row for that spot with null as other values
+            checkDBsForSearch(spotSearched, uId);
 
-                //look through the search tables and fav tables to find the results
         }
 
         // This method returns a list of spots the use has on their favourite list

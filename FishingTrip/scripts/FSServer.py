@@ -1,4 +1,3 @@
-from asyncio.windows_events import NULL
 import mysql.connector
 import pyodbc
 import FSEngine
@@ -104,7 +103,7 @@ def checkJSON(j, site):
         Results = json.dumps(j)
     else:
         ermsg = str.format("Not found on {0}",site)
-        Results = json.dumps({"Spot":ermsg})
+        Results = json.dumps({"NULL":ermsg})
         print(str.format("Information not found on site {0} or json not returned in correct format",site))
     return Results
 
@@ -157,21 +156,23 @@ elif request == "request":
     for day in days:        
         data_soup = FSEngine.surfForecast(day,spot)        
         FSResults = checkJSON(data_soup,"Surf-forecast")
-        if (FSResults.find("Spot") == -1):
+        if (FSResults.find("NULL") == -1):
             if day != days[0]:
                 reqRet = reqRet+","
             reqRet = (reqRet+"\""+day+"\":"+FSResults)
             resultsFound = True
         else:
-            reqRet = (reqRet + FSResults)
             break
     reqRet = "{"+reqRet+"}"
     if fullWeekResults == True:
         sqlCursor = mssqlDB.cursor()
         if resultsFound == False:
             reqRetT4F = checkJSON(FSEngine.tides4fishing(spot),"Tides4Fishing")
-            dt_string = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            reqRet = reqRetT4F
+            if (reqRetT4F.find("NULL") == -1):
+                reqRet = reqRetT4F
+                resultsFound = True                
+        if(resultsFound == False):
+            reqRet=json.dumps({"Spot not found":"Here"})
         sqlCursor.execute("UPDATE searchForecasts SET dataSF = '%s' WHERE spot = '%s'"% (reqRet, spot)) 
         sqlCursor.close()
     else:
@@ -185,15 +186,6 @@ elif request == "request":
                 break
         print(reqRetSF)
         print(reqRetT4F)
-
-
-
-
-
-
-
-
-
 
 
 

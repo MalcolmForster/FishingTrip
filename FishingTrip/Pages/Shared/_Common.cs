@@ -309,16 +309,26 @@ namespace FishingTrip.Pages.Shared
             return dayInfo;
         }
 
-        public static async void spot_Forecast_Script(string Spot) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
+        public static bool taskRunning = false;
+
+        public static async void runTask(string spot)
+        {
+            taskRunning = true;
+            await Task.Run(() => spot_Forecast_Script(spot)).ContinueWith(task => { taskRunning = false; });
+
+        }
+
+        public static async Task spot_Forecast_Script(string Spot) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
         {
             Console.WriteLine("Script is activated");
             //This requires the use of the the python webscraper, found in Pages\Shared\Scripts
             string json = "";            
 
             ProcessStartInfo start = new ProcessStartInfo();
-
-            string pyScript = "location of python script";
-            start.FileName = "location of python exe";
+            string pyScript = "z:/Programming Projects/FishingTrip/FishingTrip/scripts/FSServer.py";
+            start.FileName = "C:\\Users\\Malcolm Forster\\AppData\\Local\\Microsoft\\WindowsApps\\python3.9.exe";
+            //string pyScript = "location of python script";
+            //start.FileName = "location of python exe";
 
             start.Arguments = string.Format("\"{0}\" request \"{1}\" {2}", pyScript, Spot, "FTW");
             start.UseShellExecute = false;
@@ -328,6 +338,9 @@ namespace FishingTrip.Pages.Shared
             p.Start();
             StreamReader reader = p.StandardOutput;
             json = reader.ReadToEnd();
+
+            //method here to tell page (or ajax) to refresh as the task completed as table should be updated
+
 
             //$directory = str_replace("user", "scripts/FSServer.py", getcwd());
 

@@ -42,10 +42,30 @@ namespace FishingTrip.Pages
             }
         }
 
+        //public void OnPostPythonForecasts(List<string> spotsToForecast)
+        //{
+        //    if(spotsToForecast.Count > 0)
+        //    {
+        //        foreach (string spot in spotsToForecast)
+        //        {
+        //            spot_Forecast_Script(spot);
+        //        }
+        //    }
+        //}
+
+        //public void
         public void OnPostRemoveSearch()
         {
             string whichSpot = Request.Form["whichSpot"];
             delSearch(whichSpot, User.Claims.ElementAtOrDefault(0).Value);
+
+
+            string forecast = "";
+
+            if (forecast == null)
+            {
+                spot_Forecast_Script(Request.Form["newSpotInput"]);
+            }
         }
     }
 }

@@ -325,9 +325,10 @@ namespace FishingTrip.Pages.Shared
             string json = "";           
 
             ProcessStartInfo start = new ProcessStartInfo();
-
-            string pyScript = "location of python script";
-            start.FileName = "location of python exe";
+            string pyScript = "z:/Programming Projects/FishingTrip/FishingTrip/scripts/FSServer.py";
+            start.FileName = "C:\\Users\\Malcolm Forster\\AppData\\Local\\Microsoft\\WindowsApps\\python3.9.exe";
+            //string pyScript = "location of python script";
+            //start.FileName = "location of python exe";
 
             start.Arguments = string.Format("\"{0}\" request \"{1}\" {2}", pyScript, Spot, "FTW");
             start.UseShellExecute = false;

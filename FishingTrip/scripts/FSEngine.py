@@ -258,12 +258,22 @@ def t4f_browser(location):
     data_soup = 0
     browser = mechanicalsoup.StatefulBrowser()
     
-    url = "http://www.google.com"
+    # url = "http://www.google.co.nz"
+    # browser.open(url)
+    # browser.select_form('form[action="/search"]')
+
+    # url = "https://tides4fishing.com/"
+    # browser.open(url)
+    # browser.select_form('form[id="cse-search-box"]')
+
+    url = "https://www.bing.com/"
     browser.open(url)
-    browser.select_form('form[action="/search"]')
+    browser.select_form('form[id="sb_form"]')
     
     browser.get_current_form()
-    searchQuery = location + " site:tides4fishing.com"
+    #searchQuery = location + " for the next days site:tides4fishing.com"
+    #searchQuery = location + " for the next days"
+    searchQuery = "site:tides4fishing.com " + location + " for the next days"
     browser["q"]=searchQuery
     browser.submit_selected()
     
@@ -271,12 +281,17 @@ def t4f_browser(location):
     # document.querySelector("#___gcse_0 > div > div > div > div.gsc-wrapper > div.gsc-resultsbox-visible > div > div > div.gsc-expansionArea")
     
     links = browser.links()
+    #print(browser.url)
     for link in links:
         s = str(link)
-        if s.__contains__(" for the next days"):
-            parts = s.split('=')
-            spotPage = (parts[2].split('&'))[0]
-            break
+        #print(s)
+        if s.__contains__("Forecast"):
+            if s.__contains__(" for the next days"):
+                #print(s)
+                parts = s.split('"')
+                spotPage = (parts[3].split('"'))[0]
+                #print(spotPage)
+                break
 
     fishing = []
     tides = []

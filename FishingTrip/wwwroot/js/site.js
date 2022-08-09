@@ -1,6 +1,8 @@
 ﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bun2dling-and-minification
 // for details on configuring this project to bundle and minify static web assets.
 
+//const { each } = require("jquery");
+
 //import { ajax, get } from "jquery";
 
 // Write your JavaScript code.
@@ -29,9 +31,29 @@ function toggleForecast(daysToShow) {
     }
 }
 
-function indexLoad() {
+////Z: \Programming Projects\FishingTrip\FishingTrip\Pages\Shared\_Common.cs
+////Z: \Programming Projects\FishingTrip\FishingTrip\wwwroot\js\site.js
+function refreshDiv(divID) {
+    console.log(divID);;
+    $(divID).load(location.href +" "+divID);
+
+}
+
+async function indexLoad() {
     const daysToShow = setDays();
     toggleForecast(daysToShow);
+    //console.log(document.getElementsByName("emptySearchSpot")[0].value);    
+    if(document.getElementsByName("emptySearchSpot").length > 0) {
+        setTimeout(() => {
+            for(let i = 0; i < document.getElementsByName("emptySearchSpot").length; i++) {
+                //console.log("Refreshing");
+                //console.log(refreshSearchSpot(document.getElementsByName('emptySearchSpot')[i].value));
+                refreshDiv("#"+document.getElementsByName("emptySearchSpot")[i].value + "_Searched");                
+            }
+            indexLoad();
+        }, 5000);        
+    };
+    //spotForecastScript();
 }
 
 function forecastDicToDiv() {

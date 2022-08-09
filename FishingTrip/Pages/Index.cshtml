@@ -21,7 +21,7 @@
         See recent posts/fishing trips of friends and self*@
 
         @if (SignInManager.IsSignedIn(User))
-        {
+        {//onload post to c#
             string[] week = nextDays(7);
             //remove_Favourite("Test");
             <h1>Recent Posts and fishing trips from friends</h1>
@@ -41,15 +41,15 @@
                     {
                         if (week[i] != "")
                         {
-                                                <label>&nbsp&nbsp&nbsp&nbsp</label>
-                                                <label>@week[i]:</label>
+                            <label>&nbsp&nbsp&nbsp&nbsp</label>
+                            <label>@week[i]:</label>
                             if (i < 3)
                             {
-                                                    <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] checked />
+                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] checked />
                             }
                             else
                             {
-                                                    <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] />
+                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] />
                             }
                         }
                     }
@@ -75,62 +75,75 @@
                     {
                         if (spot != "")
                         {
-                                <li style="background-color: lightslategrey;" name=@String.Concat("fav",spot.Replace(" ","_"))>
-                                    <h2 style="display:inline;">@spot</h2>
-                                    <form method="post" asp-page-handler="RemoveSearch">
-                                        <input type="hidden" name="whichSpot" value="@spot"/>
-                                        <button type="submit">Remove Search</button>
-                                    </form>
-                                    <div name="dayForecastDetails">
-                                        @{
+                            <li style="background-color: lightslategrey;" name=@String.Concat("fav",spot.Replace(" ","_"))>
+                                <h2 style="display:inline;">@spot</h2>
+                                <form method="post" asp-page-handler="RemoveSearch">
+                                    <input type="hidden" name="whichSpot" value="@spot"/>
+                                    <button type="submit">Remove Search</button>
+                                </form>
+                                <div name="dayForecastDetails" id=@String.Concat(@spot,"_Searched")>
+                                    @{
                                         Dictionary<string, Hour[]> usersSearchedSpots = getForecastConditions("FTW", spot, User.Claims.ElementAtOrDefault(0).Value);
                                         //Dictionary<string, Hour[]> dataT4F = getFavConditions("T4F", spot);
+                                        if (usersSearchedSpots.Keys.First() == "ToBeFound")
+                                        {
+                                            <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                                            <input type="hidden" name="emptySearchSpot" value="@spot"/>
+                                            
+                                            if (taskRunning == false)
+                                            {
+                                                runTask(spot);
+                                            }
+                                                //await findTask;
 
-                                        if (usersSearchedSpots.Count() > 0 && usersSearchedSpots.Keys.First() != "Not Found")
+                                            //add async here somehow, shows div above when script is active, when finished switched to the below else if statement
+                                            //forecastsToFind.Add(spot);                                          
+                                            //spot_Forecast_Script(spot); 
+                                        } else if (usersSearchedSpots.Count() > 0 && usersSearchedSpots.Keys.First() != "Spot not found")
                                         {
                                             foreach (KeyValuePair<string, Hour[]> dayInfo in usersSearchedSpots)
                                             {
-                                                if (dayInfo.Key != "Not Found")
+                                                if (dayInfo.Key != "Spot not found")
                                                 {
-                                                            <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
-                                                                @{
+                                                    <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
+                                                        @{
                                                             ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
-                                                                        <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
-                                                                        <label>
-                                                                            Low tides: @forecastDiv.lowTides
-                                                                        </label>
-                                                                        <label>
-                                                                            , High tides: @forecastDiv.highTides
-                                                                        </label>
-                                                                        <label>
-                                                                            , Sea Temperature: @forecastDiv.waterTemp
-                                                                        </label>
-                                                                        <table class="forecastTable">
-                                                                            <tr>
-                                                                                <th></th>
-                                                                                @foreach (string time in ForecastFormat.displayTimes)
-                                                                    {
-                                                                                    <th> @time </th>
-                                                                    }
-                                                                            </tr>
-                                                                            @foreach (string s in forecastDiv.waveInfo)
+                                                            <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
+                                                            <label>
+                                                                Low tides: @forecastDiv.lowTides
+                                                            </label>
+                                                            <label>
+                                                                , High tides: @forecastDiv.highTides
+                                                            </label>
+                                                            <label>
+                                                                , Sea Temperature: @forecastDiv.waterTemp
+                                                            </label>
+                                                            <table class="forecastTable">
+                                                                <tr>
+                                                                    <th></th>
+                                                                    @foreach (string time in ForecastFormat.displayTimes)
                                                                 {
-                                                                                <td>@s</td>
+                                                                        <th> @time </th>
                                                                 }
-                                                                        </table>
+                                                                </tr>
+                                                                @foreach (string s in forecastDiv.waveInfo)
+                                                                {
+                                                                    <td>@s</td>
                                                                 }
-                                                            </div>
+                                                            </table>
+                                                        }
+                                                    </div>
                                                 }
                                             }
                                         }
-                                        else
+                                        else if(usersSearchedSpots.Keys.First() == "Spot not found")
                                         {
-                                            //This creates css loading animation
-                                                    <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                                            <p>Spot was not found</p>
+                                            //<div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
                                         }
-                                        }
-                                    </div>
-                                </li>
+                                    }
+                                </div>
+                            </li>
                         }
                     }
                 }

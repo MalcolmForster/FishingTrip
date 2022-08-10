@@ -52,12 +52,15 @@ mssqlDB = connMSSql()
 mysqlDBData = tablesData(mysqlDB)
 
 # Second step is to find all favourited fishing spots from all users on from the fishr database
-fishr = mysql.connector.connect(
-    **FSConnections.fishrMysqlLinux
-)
+# fishr = mysql.connector.connect(
+#     **FSConnections.fishrMysqlLinux
+# )
 
-cursor = fishr.cursor()
-query = 'SELECT favspots FROM users' #_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_Need to adjust this to get favourites from the new database
+# cursor = fishr.cursor()
+# query = 'SELECT favspots FROM users' #_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_Need to adjust this to get favourites from the new database
+
+cursor = mssqlDB.cursor()
+query = "SELECT FavSpots FROM userFavourites"
 cursor.execute(query)
 addToDb = []
 currFavs = []
@@ -75,14 +78,22 @@ for (UserFavs) in cursor:
 # Can replace some of above code by using the 'CREATE TABLE IF NOT EXISTS statement' instead
 
 cursor.close()
-fishr.close()
-
 cursor = mysqlDB.cursor()
 
 if len(addToDb) > 0:
-    for table in addToDb:      
+    for table in addToDb:  
         cursor.execute("""CREATE TABLE `%s` (`id` int(11) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT, `date_time` datetime NOT NULL, `dataSF` JSON, `dataT4F` JSON)"""% (table,))
-        print("Created: "+ table)
+cursor.close()
+
+cursor = mssqlDB.cursor()
+
+if len(addToDb) > 0:
+    for newFavSpot in addToDb:
+        filler=json.dumps({"Spot not found":"On Website"})      
+        #cursor.execute("""CREATE TABLE `%s` (`id` int(11) unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT, `date_time` datetime NOT NULL, `dataSF` JSON, `dataT4F` JSON)"""% (table,))
+        cursor.execute("""INSERT INTO favForecastsSF (spot, dataSF) VALUES '%s','%s')"""% (newFavSpot,filler))
+        cursor.execute("""INSERT INTO favForecastsT4F (spot, dataSF) VALUES ('%s','%s')"""% (newFavSpot,filler))
+        print("Created: "+ newFavSpot)
 
 cursor.close()
 
@@ -192,22 +203,24 @@ elif request == "request":
 elif request == "update":
     weekFromToday = getWeekFromToday()
     reqRet = []
-    
-    cursor = mysqlDB.cursor()
-    cursor.execute('TRUNCATE favForecastsSF')
-    cursor.close()
+    if len(sys.argv) > 2:
+        currFavs = sys.argv[2:]
+    else:    
+        cursor = mysqlDB.cursor()
+        cursor.execute('TRUNCATE favForecastsSF')
+        cursor.close()
 
-    sqlCursor = mssqlDB.cursor()
-    sqlCursor.execute('TRUNCATE TABLE favForecastsSF')
-    sqlCursor.close()
+        sqlCursor = mssqlDB.cursor()
+        sqlCursor.execute('TRUNCATE TABLE favForecastsSF')
+        sqlCursor.close()
 
-    cursor = mysqlDB.cursor()
-    cursor.execute('TRUNCATE favForecastsT4F')
-    cursor.close()
+        cursor = mysqlDB.cursor()
+        cursor.execute('TRUNCATE favForecastsT4F')
+        cursor.close()
 
-    sqlCursor = mssqlDB.cursor()
-    sqlCursor.execute('TRUNCATE TABLE favForecastsT4F')
-    sqlCursor.close()
+        sqlCursor = mssqlDB.cursor()
+        sqlCursor.execute('TRUNCATE TABLE favForecastsT4F')
+        sqlCursor.close()
 
     for spot in currFavs:
         #_______________________Uploads SurfForecast records to database____________________________

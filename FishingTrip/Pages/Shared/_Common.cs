@@ -310,27 +310,36 @@ namespace FishingTrip.Pages.Shared
         }
 
         public static bool taskRunning = false;
+        public static bool addFavRunning = false;
 
-        public static async void runTask(string spot)
+        public static async void runTask(string spot, string request, string param)
         {
-            taskRunning = true;
-            await Task.Run(() => spot_Forecast_Script(spot)).ContinueWith(task => { taskRunning = false; });
+            if (request == "update")
+            {
+                addFavRunning = true;
+                await Task.Run(() => spot_Forecast_Script(spot, request, param)).ContinueWith(task => { addFavRunning = false; });
+
+            } else if (request == "request"){
+                taskRunning = true;
+                await Task.Run(() => spot_Forecast_Script(spot, request, param)).ContinueWith(task => { taskRunning = false; });
+            }
+
 
         }
 
-        public static async Task spot_Forecast_Script(string Spot) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
+        public static async Task spot_Forecast_Script(string Spot, string request, string param) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
         {
             Console.WriteLine("Script is activated");
             //This requires the use of the the python webscraper, found in Pages\Shared\Scripts
             string json = "";           
 
             ProcessStartInfo start = new ProcessStartInfo();
-            string pyScript = "z:/Programming Projects/FishingTrip/FishingTrip/scripts/FSServer.py";
-            start.FileName = "C:\\Users\\Malcolm Forster\\AppData\\Local\\Microsoft\\WindowsApps\\python3.9.exe";
+            string pyScript = _ServerConnections.fishScraperPythonFile;
+            start.FileName = _ServerConnections.pythonExeLoc;
             //string pyScript = "location of python script";
             //start.FileName = "location of python exe";
 
-            start.Arguments = string.Format("\"{0}\" request \"{1}\" {2}", pyScript, Spot, "FTW");
+            start.Arguments = string.Format("\"{0}\" {1} \"{2}\" {3}", pyScript, request, Spot, param);
             start.UseShellExecute = false;
             start.RedirectStandardOutput = true;
             Process p = new Process();
@@ -604,12 +613,12 @@ namespace FishingTrip.Pages.Shared
         // This method returns a list of spots the use has on their favourite list
         public static string[] getFavSpots(string uId)
         {
-            SqlConnection cnn = dbConnect();
+            SqlConnection cnn = linuxConnect();
             SqlDataReader rdr = null;
 
             if (cnn != null)
             {
-                string query = "SELECT [FavSpots] FROM [dbo].[AspNetUsers] WHERE Id=@userID;";
+                string query = "SELECT [FavSpots] FROM [dbo].[userFavourites] WHERE Id=@userID;";
                 SqlCommand cmd = new SqlCommand(query, cnn);
                 try
                 {
@@ -623,12 +632,22 @@ namespace FishingTrip.Pages.Shared
                 {
                     using (rdr = cmd.ExecuteReader())
                     {
-                        if (rdr.Read())
+                        if (!rdr.HasRows)
                         {
-                            string[] allSpots = rdr.GetString(0).Trim('\'').Split(",");
-                            //foreach (string s in allSpots)
-                            return allSpots;
+                            string addUserFav = "INSERT INTO [dbo].[userFavourites] (Id) VALUES @userID;";
+                            SqlCommand addUserToFavs = new SqlCommand(addUserFav, cnn);
+                            addUserToFavs.Parameters.AddWithValue("@userID", uId);
+                            addUserToFavs.ExecuteNonQuery();                            
+                        } else
+                        {
+                            if (rdr.Read())
+                            {
+                                string[] allSpots = rdr.GetString(0).Trim('\'').Split(",");
+                                //foreach (string s in allSpots)
+                                return allSpots;
+                            }
                         }
+
                     }
                 }
                 catch
@@ -659,10 +678,10 @@ namespace FishingTrip.Pages.Shared
                 }
                 if (addFav == true)
                 {
+                    runTask(fav,"update", "");
                     string newFavConcat = String.Join(",", allSpots) + fav + ",";
-
-                    SqlConnection conn = dbConnect();
-                    string query = "UPDATE [dbo].[AspNetUsers] SET [FavSpots] = @newFavs WHERE Id= @userID;";
+                    SqlConnection conn = linuxConnect();
+                    string query = "UPDATE [dbo].[userFavourites] SET [FavSpots] = @newFavs WHERE Id= @userID;";
                     SqlCommand alterFavs = new SqlCommand(query, conn);
                     alterFavs.Parameters.AddWithValue("@newFavs", newFavConcat);
                     alterFavs.Parameters.AddWithValue("@userID", uId);
@@ -676,7 +695,7 @@ namespace FishingTrip.Pages.Shared
                     {
                         Console.WriteLine("Something went wrong when updating table");
                     }
-                    closeDB(conn, null);
+                    closeDB(conn, null);                    
                 }
             }
             else
@@ -704,8 +723,8 @@ namespace FishingTrip.Pages.Shared
                 if (rmvFav == true)
                 {
                     string newFavConcat = String.Join(",", allSpots).Replace(fav + ",", "");
-                    SqlConnection conn = dbConnect();
-                    string query = "UPDATE [dbo].[AspNetUsers] SET [FavSpots] = @newFavs WHERE Id= @userID;";
+                    SqlConnection conn = linuxConnect();
+                    string query = "UPDATE [dbo].[userFavourites] SET [FavSpots] = @newFavs WHERE Id= @userID;";
                     SqlCommand alterFavs = new SqlCommand(query, conn);
                     alterFavs.Parameters.AddWithValue("@newFavs", newFavConcat);
                     alterFavs.Parameters.AddWithValue("@userID", uId);

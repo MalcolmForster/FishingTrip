@@ -34,9 +34,8 @@ function toggleForecast(daysToShow) {
 ////Z: \Programming Projects\FishingTrip\FishingTrip\Pages\Shared\_Common.cs
 ////Z: \Programming Projects\FishingTrip\FishingTrip\wwwroot\js\site.js
 function refreshDiv(divID) {
-    console.log(divID);;
+    console.log(divID);
     $(divID).load(location.href +" "+divID);
-
 }
 
 async function indexLoad() {
@@ -53,6 +52,19 @@ async function indexLoad() {
             indexLoad();
         }, 5000);        
     };
+
+    if (document.getElementsByName("emptyFavSpot").length > 0) {
+        setTimeout(() => {
+            for (let i = 0; i < document.getElementsByName("emptyFavSpot").length; i++) {
+                //console.log("Refreshing");
+                //console.log(refreshSearchSpot(document.getElementsByName('emptySearchSpot')[i].value));
+                refreshDiv("#" + document.getElementsByName("emptyFavSpot")[i].value + "_Favourite");
+            }
+            indexLoad();
+        }, 5000);
+    };
+
+
     //spotForecastScript();
 }
 

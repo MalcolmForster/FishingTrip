@@ -58,14 +58,6 @@ namespace FishingTrip.Pages
         {
             string whichSpot = Request.Form["whichSpot"];
             delSearch(whichSpot, User.Claims.ElementAtOrDefault(0).Value);
-
-
-            string forecast = "";
-
-            if (forecast == null)
-            {
-                spot_Forecast_Script(Request.Form["newSpotInput"]);
-            }
         }
     }
 }

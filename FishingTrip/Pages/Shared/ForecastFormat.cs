@@ -42,12 +42,34 @@ namespace FishingTrip.Pages.Shared
     public class ForecastDiv
     {
         public string searchSpot { get; set; }
-
-        public ForecastDiv(string searchSpot)
+        public string rawDiv;
+        public ForecastDiv(KeyValuePair<string, Hour[]> dayInfo)
         {
-            this.searchSpot = searchSpot;
-        }
+            //this.searchSpot = searchSpot;
+            ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
+            List<string> times = new List<string>();
+            List<string> waveInfo = new List<string>();
 
+            foreach (string time in ForecastFormat.displayTimes)
+            {
+                times.Add("<th>" + time + " </th>");
+            }
+            foreach (string s in forecastDiv.waveInfo)
+            {
+                waveInfo.Add("<td>" + s + " </td>");
+            }
+
+            string concatTimes = String.Concat(times.ToArray());
+            string concatWaveInfo = String.Concat(waveInfo.ToArray());
+
+            rawDiv = @"<div name = 'forecastDiv' class='forecastDiv' style='display:none' id='" + dayInfo.Key + "'>" +
+                        "<h2 style = 'display: inline-block;'>" + dayInfo.Key + ": " +
+                        "</h2><label>Low tides: " + forecastDiv.lowTides + "</label>" +
+                        "<label>, High tides: " + forecastDiv.highTides + "</label>" +
+                        "<label>, Sea Temperature:" + forecastDiv.waterTemp + "</label>" +
+                        "<table class=\"forecastTable\"><tr><th></th>" + concatTimes + "</tr><tr>" +
+                        concatWaveInfo+"</tr></table></div>";
+        }
 
         public static void forecastDiv()
         {

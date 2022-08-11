@@ -94,7 +94,6 @@
                                             {
                                                 runTask(spot, "request", "FTW");
                                             }
-
                                         }
                                         else if (usersSearchedSpots.Count() > 0 && usersSearchedSpots.Keys.First() != "Spot not found")
                                         {
@@ -102,41 +101,15 @@
                                             {
                                                 if (dayInfo.Key != "Spot not found")
                                                 {
-                                                    <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
-                                                        @{
-                                                            ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
-                                                            <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
-                                                            <label>
-                                                                Low tides: @forecastDiv.lowTides
-                                                            </label>
-                                                            <label>
-                                                                , High tides: @forecastDiv.highTides
-                                                            </label>
-                                                            <label>
-                                                                , Sea Temperature: @forecastDiv.waterTemp
-                                                            </label>
-                                                            <table class="forecastTable">
-                                                                <tr>
-                                                                    <th></th>
-                                                                    @foreach (string time in ForecastFormat.displayTimes)
-                                                                    {
-                                                                        <th> @time </th>
-                                                                    }
-                                                                </tr>
-                                                                @foreach (string s in forecastDiv.waveInfo)
-                                                                {
-                                                                    <td>@s</td>
-                                                                }
-                                                            </table>
-                                                        }
-                                                    </div>
+                                                    ForecastDiv newdiv = new ForecastDiv(dayInfo);
+                                                    @Html.Raw(newdiv.rawDiv);
+
                                                 }
                                             }
                                         }
                                         else if (usersSearchedSpots.Keys.First() == "Spot not found")
                                         {
                                             <p>Spot was not found</p>
-                                            //<div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
                                         }
                                     }
                                 </div>
@@ -170,34 +143,9 @@
                                                 {
                                                     if (dayInfo.Key != "Not Found")
                                                     {
-                                                        <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
-                                                            @{
-                                                                ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
-                                                                <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
-                                                                <label>
-                                                                    Low tides: @forecastDiv.lowTides
-                                                                </label>
-                                                                <label>
-                                                                    , High tides: @forecastDiv.highTides
-                                                                </label>
-                                                                <label>
-                                                                    , Sea Temperature: @forecastDiv.waterTemp
-                                                                </label>
-                                                                <table class="forecastTable">
-                                                                    <tr>
-                                                                        <th></th>
-                                                                        @foreach (string time in ForecastFormat.displayTimes)
-                                                                        {
-                                                                            <th>@time</th>
-                                                                        }
-                                                                    </tr>
-                                                                    @foreach (string s in forecastDiv.waveInfo)
-                                                                    {
-                                                                        <td>@s</td>
-                                                                    }
-                                                                </table>
-                                                            }
-                                                        </div>
+                                                        ForecastDiv newdiv = new ForecastDiv(dayInfo);
+                                                        @Html.Raw(newdiv.rawDiv);
+
                                                     }
                                                 }
                                             }
@@ -207,35 +155,8 @@
                                                 {
                                                     if (dayInfo.Key != "Not Found")
                                                     {
-                                                        <div name="forecastDiv" class="forecastDiv" style="display:none" id="@dayInfo.Key">
-                                                            @{
-                                                                ForecastFormat forecastDiv = new ForecastFormat(dayInfo);
-
-                                                                <h2 style="display: inline-block;"> @dayInfo.Key : </h2>
-                                                                <label>
-                                                                    Low tides: @forecastDiv.lowTides
-                                                                </label>
-                                                                <label>
-                                                                    , High tides: @forecastDiv.highTides
-                                                                </label>
-                                                                <label>
-                                                                    , Sea Temperature: @forecastDiv.waterTemp
-                                                                </label>
-                                                                <table class="forecastTable">
-                                                                    <tr>
-                                                                        <th></th>
-                                                                        @foreach (string time in ForecastFormat.displayTimes)
-                                                                        {
-                                                                            <th>@time</th>
-                                                                        }
-                                                                    </tr>
-                                                                    @foreach (string s in forecastDiv.waveInfo)
-                                                                    {
-                                                                        <td>@s</td>
-                                                                    }
-                                                                </table>
-                                                            }
-                                                        </div>
+                                                        ForecastDiv newdiv = new ForecastDiv(dayInfo);
+                                                        @Html.Raw(newdiv.rawDiv);
                                                     }
                                                 }
                                             }

@@ -25,11 +25,13 @@
             string[] week = nextDays(7);
             //remove_Favourite("Test");
             <h1>Recent Posts and fishing trips from friends</h1>
+
             <p>
                 Creating a method to collect a certain number of posts from the database from friends and own user
                 This could be harder to do because of the multiple database
                 Use a combine function to add them all together?
             </p>
+
             <p>Insert recent friend posts here</p>
             //Find method to be able to find friends and then add there most recent posts similar to the old PHP style site
 
@@ -56,18 +58,13 @@
                 }
             </form>
             <h2>Find forecast for a fishing spot</h2>
-            //Following form is used to search for forecasts at a new spot
-            <form id="seachForSpot" method="post" action="~/"> @*This will run the add_Search command in _Common*@
+            <form id="seachForSpot" method="post" action="~/">
                 <input id="newSpotInput" name="newSpotInput" type="text" size="50" placeholder="Input fishing location here" />
                 <input type="hidden" name="searchSpot" value="true" />
                 <input id="newSpotSubmit" type="submit" value="Find forecast"/>
             </form>
             <br/>
 
-            /*
-            method to create a new div, similar to those in the favouriteSpots, to display a loading symbol until data on the input spot
-            from newSpotInput can be retrieved from database tables spotForecast(SF/T4F)
-            */
             <ul class="favSpotList">
                 @{
                     string[] searchedSpots = getSearchedSpots(User.Claims.ElementAtOrDefault(0).Value);
@@ -75,43 +72,40 @@
                     {
                         if (spot != "")
                         {
-                                    <li style="background-color: lightslategrey;" name=@String.Concat("fav",spot.Replace(" ","_"))>
-                                        <h2 style="display:inline;">@spot</h2>
-                                        <form method="post" asp-page-handler="RemoveSearch">
-                                            <input type="hidden" name="whichSpot" value="@spot"/>
-                                            <button type="submit">Remove Search</button>
-                                        </form>
-                                        <div name="dayForecastDetails" id=@String.Concat(@spot,"_Searched")>
-                                            @{
-                                        Dictionary<string, Hour[]> usersSearchedSpots = getForecastConditions("FTW", spot, User.Claims.ElementAtOrDefault(0).Value);
-                                        //Dictionary<string, Hour[]> dataT4F = getFavConditions("T4F", spot);
-                                        if (usersSearchedSpots.Keys.First() == "ToBeFound")
-                                        {
-                                            <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-                                            <input type="hidden" name="emptySearchSpot" value="@spot" />
-
+                            SpotForecast spotForecast = new SpotForecast('s',spot, User.Claims.ElementAtOrDefault(0).Value);
+                                <li style="background-color: lightslategrey;" name=@String.Concat("fav",spot.Replace(" ","_"))>
+                                <h2 style="display:inline;">@spot</h2>
+                                <form method="post" asp-page-handler="RemoveSearch">
+                                    <input type="hidden" name="whichSpot" value="@spot"/>
+                                    <button type="submit">Remove Search</button>
+                                </form>
+                                <div name="dayForecastDetails" id=@String.Concat(@spot,"_Searched")>
+                                @{
+                                    if (spotForecast.spotWeek.Keys.First() == "ToBeFound")
+                                    {
+                                    <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                                    <input type="hidden" name="emptySearchSpot" value="@spot" />
                                             if (taskRunning == false)
                                             {
                                                 runTask(spot, "request", "FTW");
                                             }
                                         }
-                                        else if (usersSearchedSpots.Count() > 0 && usersSearchedSpots.Keys.First() != "Spot not found")
+                                        else if (spotForecast.spotWeek.Count() > 0 && spotForecast.spotWeek.Keys.First() != "Spot not found")
                                         {
-                                            foreach (KeyValuePair<string, Hour[]> dayInfo in usersSearchedSpots)
+                                            foreach (KeyValuePair<string, Hour[]> dayInfo in spotForecast.spotWeek)
                                             {
                                                 if (dayInfo.Key != "Spot not found")
                                                 {
                                                     ForecastDiv newdiv = new ForecastDiv(dayInfo);
                                                     @Html.Raw(newdiv.rawDiv);
-
                                                 }
                                             }
                                         }
-                                        else if (usersSearchedSpots.Keys.First() == "Spot not found")
+                                        else if (spotForecast.spotWeek.Keys.First() == "Spot not found")
                                         {
                                             <p>Spot was not found</p>
                                         }
-                                    }
+                                }
                                 </div>
                             </li>
                         }
@@ -128,35 +122,23 @@
                     {
                         if (spot != "")
                         {
-                            //string[] checkedDays = getCheckedDays();
+                            //START OF USING OBJECTS
+                            SpotForecast spotForecast = new SpotForecast('f',spot, User.Claims.ElementAtOrDefault(0).Value);
                             <li name=@String.Concat("fav",spot.Replace(" ","_"))>
-                                <h2>@spot</h2>
+                                <h2>@spotForecast.spotName</h2>
                                 <div name="dayForecastDetails" id=@String.Concat(@spot,"_Favourite")>
                                     @{
                                         try
                                         {
-                                            Dictionary<string, Hour[]> dataSF = getForecastConditions("SF", spot, "");
-                                            Dictionary<string, Hour[]> dataT4F = getForecastConditions("T4F", spot, "");
-                                            if (dataSF.Keys.First() != "Not Found")
+                                            if (spotForecast.spotWeek.Keys.First() != "Not Found")
                                             {
-                                                foreach (KeyValuePair<string, Hour[]> dayInfo in dataSF)
+                                                foreach (KeyValuePair<string, Hour[]> dayInfo in spotForecast.spotWeek)
                                                 {
                                                     if (dayInfo.Key != "Not Found")
                                                     {
                                                         ForecastDiv newdiv = new ForecastDiv(dayInfo);
                                                         @Html.Raw(newdiv.rawDiv);
 
-                                                    }
-                                                }
-                                            }
-                                            else if (dataT4F.Keys.First() != "Not Found")
-                                            {
-                                                foreach (KeyValuePair<string, Hour[]> dayInfo in dataT4F)
-                                                {
-                                                    if (dayInfo.Key != "Not Found")
-                                                    {
-                                                        ForecastDiv newdiv = new ForecastDiv(dayInfo);
-                                                        @Html.Raw(newdiv.rawDiv);
                                                     }
                                                 }
                                             }
@@ -178,7 +160,6 @@
                 }
             </ul>
 
-
             <form id="addFav" action="~/" method="post">
                 <label>Add favourite fishing spot</label>
                 <input type="text" name="favSpot" width="50" value="" />
@@ -190,8 +171,7 @@
                 <input type="text" name="rmvSpot" width="50" value="" />
                 <input type="hidden" name="rmvFavourite" value="true" />
                 <input type="submit" value="Remove favourite" />
-                </form>
-
+            </form>
         }
         else
         {

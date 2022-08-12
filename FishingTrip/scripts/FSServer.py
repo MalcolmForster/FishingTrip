@@ -281,8 +281,13 @@ elif request == "update":
         sqlCursor.execute("""INSERT INTO favForecastsT4F (spot,date_time, dataSF) VALUES ('%s', '%s','%s')"""% (spot,dt_string, reqRetMySql))
         cursor.close()
         sqlCursor.close()
+elif request == "clearSearch":
+    sqlCursor=mssqlDB.cursor()
+    sqlCursor.execute("DELETE FROM searchForecasts WHERE date_time < DATEADD(hh,-1, GETDATE());")
+    sqlCursor.close()
+
 else:
-    print ("Input arguments incorrect")    
+    print ("Input arguments incorrect")   
 
 mysqlDB.commit()  
 mssqlDB.commit()          

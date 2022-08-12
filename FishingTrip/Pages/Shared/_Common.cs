@@ -86,29 +86,29 @@ namespace FishingTrip.Pages.Shared
             }
 
         }
-        public class Hour
-        {
-            public string Time { get; set; }
-            public string Rain { get; set; }
-            public string Sunset { get; set; }
-            public string Sunrise { get; set; }
-            public string LowTide { get; set; }
-            public string HighTide { get; set; }
-            public string Chilltemp { get; set; }
-            public string WavePower { get; set; }
-            public string WindSpeed { get; set; }
-            public string Temperature { get; set; }
-            public string WaveHeight { get; set; }
-            public string WaveDirection { get; set; }
-            public string Winddirection { get; set; }
-            public string WaterTemperature { get; set; }
-            public string FishActivity { get; set; }
-        }
+        //public class Hour
+        //{
+        //    public string Time { get; set; }
+        //    public string Rain { get; set; }
+        //    public string Sunset { get; set; }
+        //    public string Sunrise { get; set; }
+        //    public string LowTide { get; set; }
+        //    public string HighTide { get; set; }
+        //    public string Chilltemp { get; set; }
+        //    public string WavePower { get; set; }
+        //    public string WindSpeed { get; set; }
+        //    public string Temperature { get; set; }
+        //    public string WaveHeight { get; set; }
+        //    public string WaveDirection { get; set; }
+        //    public string Winddirection { get; set; }
+        //    public string WaterTemperature { get; set; }
+        //    public string FishActivity { get; set; }
+        //}
 
         public static Dictionary<string, Hour[]> getDayInfo(string website, JsonDocument json)
         {
-            var jsonDict = new Dictionary<string, JsonDocument>();
-            jsonDict = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>(json);
+            //var jsonDict = new Dictionary<string, JsonDocument>();
+            var jsonDict = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>(json);
             var dailyForecast = new Dictionary<string, Hour[]>();
 
             List<Hour> hourList = new List<Hour>();
@@ -121,7 +121,7 @@ namespace FishingTrip.Pages.Shared
                     if (kvp.Key != "Spot")
                     {
                         //String here is the Day
-                        var hoursForDay = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>(kvp.Value);
+                        Dictionary<string, JsonDocument> hoursForDay = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>(kvp.Value);
                         hourList.Clear();
                         foreach (KeyValuePair<string, JsonDocument> kvp2 in hoursForDay)
                         {
@@ -329,15 +329,9 @@ namespace FishingTrip.Pages.Shared
 
         public static async Task spot_Forecast_Script(string Spot, string request, string param) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
         {
-            Console.WriteLine("Script is activated");
-            //This requires the use of the the python webscraper, found in Pages\Shared\Scripts
-            string json = "";           
-
             ProcessStartInfo start = new ProcessStartInfo();
             string pyScript = _ServerConnections.fishScraperPythonFile;
             start.FileName = _ServerConnections.pythonExeLoc;
-            //string pyScript = "location of python script";
-            //start.FileName = "location of python exe";
 
             start.Arguments = string.Format("\"{0}\" {1} \"{2}\" {3}", pyScript, request, Spot, param);
             start.UseShellExecute = false;
@@ -345,23 +339,6 @@ namespace FishingTrip.Pages.Shared
             Process p = new Process();
             p.StartInfo = start;
             p.Start();
-            StreamReader reader = p.StandardOutput;
-            json = reader.ReadToEnd();
-
-            //method here to tell page (or ajax) to refresh as the task completed as table should be updated
-
-
-            //$directory = str_replace("user", "scripts/FSServer.py", getcwd());
-
-            //$command = ("python3 ". $directory." request \"".trim($_POST['fishSpot'])."\" ".join(" ",$_POST['days']));
-            //$output = exec($command);
-
-            //// $command = escapeshellcmd("python3 " . $directory." request \"" . trim($_POST['fishSpot']) ."\" ". join(" ",$_POST['days']));
-            //// $output = shellexec($command);
-
-            //$decoded = json_decode($output, TRUE);
-
-            //echo $decoded["Wed"];
         }
 
         public static void delSearch(string spot, string uId)

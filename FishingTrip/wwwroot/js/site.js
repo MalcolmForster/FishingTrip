@@ -31,22 +31,18 @@ function toggleForecast(daysToShow) {
     }
 }
 
-////Z: \Programming Projects\FishingTrip\FishingTrip\Pages\Shared\_Common.cs
-////Z: \Programming Projects\FishingTrip\FishingTrip\wwwroot\js\site.js
 function refreshDiv(divID) {
     console.log(divID);
     $(divID).load(location.href +" "+divID);
 }
 
-async function indexLoad() {
+function indexLoad() {
     const daysToShow = setDays();
     toggleForecast(daysToShow);
-    //console.log(document.getElementsByName("emptySearchSpot")[0].value);    
+
     if(document.getElementsByName("emptySearchSpot").length > 0) {
         setTimeout(() => {
             for(let i = 0; i < document.getElementsByName("emptySearchSpot").length; i++) {
-                //console.log("Refreshing");
-                //console.log(refreshSearchSpot(document.getElementsByName('emptySearchSpot')[i].value));
                 refreshDiv("#"+document.getElementsByName("emptySearchSpot")[i].value + "_Searched");                
             }
             indexLoad();
@@ -56,16 +52,11 @@ async function indexLoad() {
     if (document.getElementsByName("emptyFavSpot").length > 0) {
         setTimeout(() => {
             for (let i = 0; i < document.getElementsByName("emptyFavSpot").length; i++) {
-                //console.log("Refreshing");
-                //console.log(refreshSearchSpot(document.getElementsByName('emptySearchSpot')[i].value));
                 refreshDiv("#" + document.getElementsByName("emptyFavSpot")[i].value + "_Favourite");
             }
             indexLoad();
         }, 5000);
     };
-
-
-    //spotForecastScript();
 }
 
 function forecastDicToDiv() {

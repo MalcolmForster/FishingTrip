@@ -21,8 +21,12 @@
         See recent posts/fishing trips of friends and self*@
 
         @if (SignInManager.IsSignedIn(User))
+        
         {//onload post to c#
             string[] week = nextDays(7);
+            string userID = User.Claims.ElementAtOrDefault(0).Value;
+            
+            
             //remove_Favourite("Test");
             <h1>Recent Posts and fishing trips from friends</h1>
 
@@ -66,35 +70,31 @@
             <br/>
 
             <ul class="favSpotList">
-                @{
-                    string[] searchedSpots = getSearchedSpots(User.Claims.ElementAtOrDefault(0).Value);
+                @{  string[] searchedSpots = getSearchedSpots(userID);          
                     foreach (string spot in searchedSpots)
                     {
                         if (spot != "")
                         {
-                            SpotForecast spotForecast = new SpotForecast('s',spot, User.Claims.ElementAtOrDefault(0).Value);
+                            SpotForecast spotForecast = new SpotForecast('s',spot, userID);
                                 <li style="background-color: lightslategrey;" name=@String.Concat("fav",spot.Replace(" ","_"))>
                                 <h2 style="display:inline;">@spot</h2>
                                 <form method="post" asp-page-handler="RemoveSearch">
                                     <input type="hidden" name="whichSpot" value="@spot"/>
                                     <button type="submit">Remove Search</button>
                                 </form>
-                                <div name="dayForecastDetails" id=@String.Concat(@spot,"_Searched")>
-                                @{
-                                    if (spotForecast.spotWeek.Keys.First() == "ToBeFound")
-                                    {
-                                    <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-                                    <input type="hidden" name="emptySearchSpot" value="@spot" />
-                                            if (taskRunning == false)
-                                            {
-                                                runTask(spot, "request", "FTW");
-                                            }
+                                <div name="dayForecastDetails" id=@String.Concat(spot.Replace(" ","_"),"_Searched")>
+                                    @{
+                                        if (spotForecast.spotWeek.Keys.First() == "ToBeFound")
+                                        {
+                                            <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                                            <input type="hidden" name="emptySearchSpot" value="@spot.Replace(" ","_")" />
+                                            runTask(spot, "request", "FTW");
                                         }
                                         else if (spotForecast.spotWeek.Count() > 0 && spotForecast.spotWeek.Keys.First() != "Spot not found")
                                         {
                                             foreach (KeyValuePair<string, Hour[]> dayInfo in spotForecast.spotWeek)
                                             {
-                                                if (dayInfo.Key != "Spot not found")
+                                                if (dayInfo.Key != "Spot not found") //SHOULD BE ABLE TO REMOVE??
                                                 {
                                                     ForecastDiv newdiv = new ForecastDiv(dayInfo);
                                                     @Html.Raw(newdiv.rawDiv);
@@ -115,42 +115,39 @@
 
             <h2>Conditions at your favourite fishing spots</h2>
             <ul class="favSpotList">
-                @{
+                @{  string[] favSpots = getFavSpots(userID);
                     // this may need to change from a list. What I am aiming to do is have the conditions shown for the users favourite spots for easy comparison. This will require a loading animation while the server recieves and redirects the fishing spots forecast. This information is all passed with a JSON file for each day, for each spot, perhaps should limit to 3 spots initially.
-                    string[] favSpots = getFavSpots(User.Claims.ElementAtOrDefault(0).Value);
                     foreach (string spot in favSpots)
                     {
                         if (spot != "")
                         {
+                            SpotForecast spotForecast = new SpotForecast('f', spot, userID);
                             //START OF USING OBJECTS
-                            SpotForecast spotForecast = new SpotForecast('f',spot, User.Claims.ElementAtOrDefault(0).Value);
                             <li name=@String.Concat("fav",spot.Replace(" ","_"))>
-                                <h2>@spotForecast.spotName</h2>
-                                <div name="dayForecastDetails" id=@String.Concat(@spot,"_Favourite")>
-                                    @{
-                                        try
+                                <h2>@spot</h2>
+                                <div name="dayForecastDetails" id=@String.Concat(spot.Replace(" ","_"),"_Favourite")>
+                                    @{                                        
+                                        
+                                        if (spotForecast.spotWeek.Keys.First() == "ToBeFound") //PROBLEMS WITH THIS SCRIPT CONTINUING TO RUN
                                         {
-                                            if (spotForecast.spotWeek.Keys.First() != "Not Found")
+                                            <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                                            <input type="hidden" name="emptyFavSpot" value="@spot.Replace(" ","_")" />
+                                            runTask(spot, "update", "");
+                                        }
+                                        else if (spotForecast.spotWeek.Count != 0 && spotForecast.spotWeek.Keys.First() != "Spot not found")
+                                        {
+                                            foreach (KeyValuePair<string, Hour[]> dayInfo in spotForecast.spotWeek)
                                             {
-                                                foreach (KeyValuePair<string, Hour[]> dayInfo in spotForecast.spotWeek)
+                                                if (dayInfo.Key != "Not Found")
                                                 {
-                                                    if (dayInfo.Key != "Not Found")
-                                                    {
-                                                        ForecastDiv newdiv = new ForecastDiv(dayInfo);
-                                                        @Html.Raw(newdiv.rawDiv);
-
-                                                    }
+                                                    ForecastDiv newdiv = new ForecastDiv(dayInfo);
+                                                    @Html.Raw(newdiv.rawDiv);
                                                 }
                                             }
                                         }
-                                        catch
+                                        else if (spotForecast.spotWeek.Keys.First() == "Spot not found")
                                         {
-                                            <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-                                            <input type="hidden" name="emptyFavSpot" value="@spot" />
-                                            if (addFavRunning == false)
-                                            {
-                                                runTask(spot, "update", "");
-                                            }
+                                            <p>Spot was not found</p>
                                         }
                                     }
                                 </div>

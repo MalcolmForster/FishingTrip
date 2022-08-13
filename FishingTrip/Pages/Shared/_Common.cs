@@ -40,7 +40,7 @@ namespace FishingTrip.Pages.Shared
             }
             catch
             {
-                Console.WriteLine("Failed to connect to database");
+                Console.WriteLine("Failed to connect to LOCAL database");
                 return null;
             }
         }
@@ -56,7 +56,7 @@ namespace FishingTrip.Pages.Shared
             }
             catch
             {
-                Console.WriteLine("Failed to connect to database");
+                Console.WriteLine("Failed to connect to LINUX database");
                 return null;
             }
         }
@@ -118,7 +118,7 @@ namespace FishingTrip.Pages.Shared
             {
                 foreach (KeyValuePair<string, JsonDocument> kvp in jsonDict)
                 {
-                    if (kvp.Key != "Spot")
+                    if (kvp.Key != "NotFoundSF")
                     {
                         //String here is the Day
                         Dictionary<string, JsonDocument> hoursForDay = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>(kvp.Value);
@@ -152,7 +152,7 @@ namespace FishingTrip.Pages.Shared
                     else
                     {
                         Hour[] newHour = new Hour[0];
-                        dailyForecast.Add("Not Found", newHour);
+                        dailyForecast.Add("NotFoundSF", newHour);
                     }
                 }
             }
@@ -160,7 +160,7 @@ namespace FishingTrip.Pages.Shared
             {
                 foreach (KeyValuePair<string, JsonDocument> kvp in jsonDict)
                 {
-                    if (kvp.Key != "Spot not found")
+                    if (kvp.Key != "Spot not found" || kvp.Key != "NotFoundT4F")
                     {
                         //String here is the Day
                         var hoursForDay = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>(kvp.Value);
@@ -266,18 +266,11 @@ namespace FishingTrip.Pages.Shared
             }
 
             SqlCommand cmd = new SqlCommand(query, cnn);
-
-            //try
-            //{
-            //    cmd.Connection.Open();
-            //}
-            //catch (SqlException ex)
-            //{
-            //    Console.WriteLine(ex.Message);
-            //}
-
             cmd.Parameters.AddWithValue("@spot", spot);
-            cmd.Parameters.AddWithValue("@user", uId);
+            if (website == "FTW")
+            {
+                cmd.Parameters.AddWithValue("@user", uId);
+            }
             var dayInfo = new Dictionary<string, Hour[]>();
 
             if (cnn != null && cnn.State == ConnectionState.Closed)
@@ -288,57 +281,70 @@ namespace FishingTrip.Pages.Shared
             {
                 using (rdr = cmd.ExecuteReader())
                 {
-                    while (rdr.Read())
+                    if (rdr.HasRows)
                     {
-                        //rdr.GetString();
                         try
                         {
-                            JsonDocument json = JsonDocument.Parse(rdr.GetString(0));
-                            dayInfo = getDayInfo(website, json);
-                        }               
+                            while (rdr.Read())
+                            {
+                                JsonDocument json = JsonDocument.Parse(rdr.GetString(0));
+                                dayInfo = getDayInfo(website, json);
+                            }
+                        }
                         catch
                         {
                             Hour[] newHour = new Hour[0];
                             dayInfo.Add("ToBeFound", newHour);
-                        }                           
+                        }
+                    } else
+                    {
+                        Hour[] newHour = new Hour[0];
+                        dayInfo.Add("ToBeFound", newHour);
                     }
+
                 }
             }
-
             closeDB(cnn, rdr);
             return dayInfo;
         }
 
         public static bool taskRunning = false;
-        public static bool addFavRunning = false;
 
-        public static async void runTask(string spot, string request, string param)
-        {
-            if (request == "update")
+        //public static void isTaskRunning(Task t)
+        //{
+        //    if (t.IsCompleted)
+        //    {
+        //        taskRunning = false;
+        //    } else
+        //    {
+        //        taskRunning = true;
+        //    }
+        //}        
+
+        public async static void runTask(string spot, string request, string param)
+        {            
+            if (taskRunning == false)
             {
-                addFavRunning = true;
-                await Task.Run(() => spot_Forecast_Script(spot, request, param)).ContinueWith(task => { addFavRunning = false; });
-
-            } else if (request == "request"){
-                taskRunning = true;
-                await Task.Run(() => spot_Forecast_Script(spot, request, param)).ContinueWith(task => { taskRunning = false; });
+                await Task.Run(() => spot_Forecast_Script(spot, request, param));
             }
+        }        
 
-
-        }
-
-        public static async Task spot_Forecast_Script(string Spot, string request, string param) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
+        public static void spot_Forecast_Script(string Spot, string request, string param) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
         {
+            Console.WriteLine("Searching for " + Spot);
+            taskRunning = true;
             ProcessStartInfo start = new ProcessStartInfo();
             string pyScript = _ServerConnections.fishScraperPythonFile;
             start.FileName = _ServerConnections.pythonExeLoc;
-
             start.Arguments = string.Format("\"{0}\" {1} \"{2}\" {3}", pyScript, request, Spot, param);
             start.UseShellExecute = false;
             start.RedirectStandardOutput = true;
             Process p = new Process();
             p.StartInfo = start;
             p.Start();
+            p.WaitForExit();            
+            taskRunning = false;
+            Console.WriteLine("End search for " + Spot);
         }
 
         public static void delSearch(string spot, string uId)
@@ -655,7 +661,7 @@ namespace FishingTrip.Pages.Shared
                 }
                 if (addFav == true)
                 {
-                    runTask(fav,"update", "");
+                    //runTask(fav,"update", "");
                     string newFavConcat = String.Join(",", allSpots) + fav + ",";
                     SqlConnection conn = linuxConnect();
                     string query = "UPDATE [dbo].[userFavourites] SET [FavSpots] = @newFavs WHERE Id= @userID;";

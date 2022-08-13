@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using static FishingTrip.Pages.Shared._Common;
+﻿using static FishingTrip.Pages.Shared._Common;
 
 namespace FishingTrip.Pages.Shared
 {
@@ -22,7 +21,7 @@ namespace FishingTrip.Pages.Shared
             else if (arg == 'f')
             {
                 spotWeek = getForecastConditions("SF", spot, uId);
-                if (spotWeek.Keys.First() == "Not Found")
+                if (spotWeek.Keys.First() == "NotFoundSF")
                 {
                     spotWeek = getForecastConditions("T4F", spot, uId);
                 }
@@ -48,4 +47,5 @@ namespace FishingTrip.Pages.Shared
         public string WaterTemperature { get; set; }
         public string FishActivity { get; set; }
     }
+
 }

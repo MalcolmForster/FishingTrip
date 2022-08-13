@@ -224,9 +224,8 @@ elif request == "update":
 
     for spot in currFavs:
         #_______________________Uploads SurfForecast records to database____________________________
-
-        reqRetSql = "{'Spot':'Not Found'}"
         print("Looking for "+spot+ " on SurfForecast")
+        reqRetMySql = ""
         data_soup = FSEngine.SF_browser(spot) 
         if data_soup != 0:
             print("Found "+spot+ " on SurfForecast")
@@ -237,14 +236,14 @@ elif request == "update":
                 if FSResults == 0:
                     print("No data found for this spot on site")
                     break
-                # else:
+                # else: 
                 #     print(FSResults)
                 if day != weekFromToday[0]:
                     reqRetMySql = reqRetMySql+","
                 reqRetMySql = (reqRetMySql+"\""+day+"\":"+FSResults)
             reqRetMySql = reqRetMySql + "}"
         else:
-            reqRetMySql = "{\"Spot\":\"Not found on Surf-forecast\"}"
+            reqRetMySql = "{\"NotFoundSF\":\"Here\"}"
             
         date = datetime.now()
         dt_string = date.strftime('%Y-%m-%d %H:%M:%S')
@@ -257,8 +256,8 @@ elif request == "update":
 
         #_______________________Uploads Tides4Fishing records to database____________________________
 
-        reqRetSql = "{'Spot':'Not Found'}"
         print("Looking for "+spot +" on Tides4Fishing")
+        reqRetMySql = ""
         dicT4F = FSEngine.tides4fishing(spot)
         if dicT4F != 0:
             print("Found "+spot+" on Tides4Fishing")
@@ -270,7 +269,7 @@ elif request == "update":
             #         break
             #     reqRetMySql = FSResults
         else:
-            reqRetMySql = "{\"Spot\":\"Not found on Tides4Fishing\"}"
+            reqRetMySql = "{\"NotFoundT4F\":\"Here\"}"
         
         #print(reqRetMySql)
         date = datetime.now()
@@ -282,9 +281,9 @@ elif request == "update":
         cursor.close()
         sqlCursor.close()
 elif request == "clearSearch":
-    sqlCursor=mssqlDB.cursor()
-    sqlCursor.execute("DELETE FROM searchForecasts WHERE date_time < DATEADD(hh,-1, GETDATE());")
-    sqlCursor.close()
+    sqlCursor=mssqlDB.cursor()        
+    sqlCursor.execute("DELETE FROM searchForecasts WHERE date_time < DATEADD(hh,-1, GETDATE())")
+    sqlCursor.close()   
 
 else:
     print ("Input arguments incorrect")   

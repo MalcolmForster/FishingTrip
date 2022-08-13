@@ -253,7 +253,7 @@ def metService(day, location):
 
 
 def t4f_browser(location):  
-   
+    #print(location)
     #using google instead:
     data_soup = 0
     browser = mechanicalsoup.StatefulBrowser()
@@ -283,15 +283,15 @@ def t4f_browser(location):
     links = browser.links()
     #print(browser.url)
     for link in links:
-        s = str(link)
+        s = str(link).lower()
         #print(s)
-        if s.__contains__("Forecast"):
-            if s.__contains__(" for the next days"):
-                #print(s)
-                parts = s.split('"')
-                spotPage = (parts[3].split('"'))[0]
-                #print(spotPage)
-                break
+        if s.lower().__contains__("forecast"):            
+            if s.lower().__contains__(location.lower()):
+                if s.lower().__contains__("for the next days"):
+                    parts = s.split('"')
+                    spotPage = (parts[3].split('"'))[0]
+                    #print(spotPage)
+                    break
 
     fishing = []
     tides = []

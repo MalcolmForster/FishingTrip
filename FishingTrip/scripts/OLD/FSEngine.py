@@ -1,4 +1,4 @@
-#from operator import concat
+from operator import concat
 import mechanicalsoup
 from datetime import datetime
 
@@ -253,11 +253,10 @@ def metService(day, location):
 
 
 def t4f_browser(location):  
-   
+    #print(location)
     #using google instead:
     data_soup = 0
     browser = mechanicalsoup.StatefulBrowser()
-    location = location.lower()
     
     # url = "http://www.google.co.nz"
     # browser.open(url)
@@ -285,9 +284,10 @@ def t4f_browser(location):
     #print(browser.url)
     for link in links:
         s = str(link).lower()
-        if s.__contains__("forecast"):
-            if s.__contains__(location.lower()):
-                if s.__contains__("for the next days"):
+        #print(s)
+        if s.lower().__contains__("forecast"):            
+            if s.lower().__contains__(location.lower()):
+                if s.lower().__contains__("for the next days"):
                     parts = s.split('"')
                     spotPage = (parts[3].split('"'))[0]
                     #print(spotPage)
@@ -468,6 +468,7 @@ def t4f_browser(location):
         
 def tides4fishing(location):
     dayResult = 0
+
     fullResults = t4f_browser(location)
     # if data_soup != 0:
     #     dayResult = SF_info(day, data_soup)

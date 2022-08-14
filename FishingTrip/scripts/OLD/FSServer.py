@@ -7,6 +7,7 @@ import sys
 
 from datetime import datetime, timedelta
 from datetime import date
+
 # This file sets up database access, and then by using FishScraperEngine file to fetch the data required.
 # This data is then passed as JSON to the required database for storage and retrieval.
 # Open connection to the fishrData database and get all existing tables and create those which are missing
@@ -147,7 +148,8 @@ if request == "backup":
             print("Added '%s' weather information"% (spot,))
         except:
             print("Failed to add json information for '%s'"% (spot,))
-        cursor.close()        
+        cursor.close()
+        
 
 elif request == "request":
     days = sys.argv
@@ -155,13 +157,13 @@ elif request == "request":
     reqRetSF = []
     reqRetT4F =[]
     del days[0:3]
+    resultsFound = False
     fullWeekResults = False
     if (days[0] == "FTW"): #stands for fishing trip website :)
         fullWeekResults = True
         days = getWeekFromToday()       
-    spotFound = False
+
     reqRet=""
-    
     for day in days:        
         data_soup = FSEngine.surfForecast(day,spot)        
         FSResults = checkJSON(data_soup,"Surf-forecast")
@@ -169,26 +171,19 @@ elif request == "request":
             if day != days[0]:
                 reqRet = reqRet+","
             reqRet = (reqRet+"\""+day+"\":"+FSResults)
+            resultsFound = True
         else:
-            print("Not found on SF")
-            break   
-
-    if reqRet != "": # if it is found on SF
-        spotFound = True
-        print("Found on SF")
+            break
     reqRet = "{"+reqRet+"}"
-
     if fullWeekResults == True:
         sqlCursor = mssqlDB.cursor()
-        if spotFound == False:
-                data_soup = FSEngine.tides4fishing(spot)
-                reqRetT4F = checkJSON(data_soup,"Tides4Fishing")
-                if (reqRetT4F.find("NULL") == -1):
-                    reqRet = reqRetT4F
-                    print("Found on T4F")
-                else:
-                    print("Not found on T4F")
-                    reqRet=json.dumps({"Spot not found":"Here"})
+        if resultsFound == False:
+            reqRetT4F = checkJSON(FSEngine.tides4fishing(spot),"Tides4Fishing")
+            if (reqRetT4F.find("NULL") == -1):
+                reqRet = reqRetT4F
+                resultsFound = True                
+        if(resultsFound == False):
+            reqRet=json.dumps({"Spot not found":"Here"})
         sqlCursor.execute("UPDATE searchForecasts SET dataSF = '%s' WHERE spot = '%s'"% (reqRet, spot)) 
         sqlCursor.close()
     else:
@@ -203,11 +198,13 @@ elif request == "request":
         print(reqRetSF)
         print(reqRetT4F)
 
+
+
 elif request == "update":
     weekFromToday = getWeekFromToday()
     reqRet = []
     if len(sys.argv) > 2:
-        currFavs = sys.argv[2:len(sys.argv)-1]
+        currFavs = sys.argv[2:]
     else:    
         cursor = mysqlDB.cursor()
         cursor.execute('TRUNCATE favForecastsSF')
@@ -227,10 +224,9 @@ elif request == "update":
 
     for spot in currFavs:
         #_______________________Uploads SurfForecast records to database____________________________
-
-        reqRetSql = "{'Spot':'Not Found'}"
         print("Looking for "+spot+ " on SurfForecast")
-        data_soup = FSEngine.SF_browser(spot)
+        reqRetMySql = ""
+        data_soup = FSEngine.SF_browser(spot) 
         if data_soup != 0:
             print("Found "+spot+ " on SurfForecast")
             #weekFromToday = ["Thu"] #<---------- for quick testing, don't need to run through entire week
@@ -240,14 +236,14 @@ elif request == "update":
                 if FSResults == 0:
                     print("No data found for this spot on site")
                     break
-                # else:
+                # else: 
                 #     print(FSResults)
                 if day != weekFromToday[0]:
                     reqRetMySql = reqRetMySql+","
                 reqRetMySql = (reqRetMySql+"\""+day+"\":"+FSResults)
             reqRetMySql = reqRetMySql + "}"
         else:
-            reqRetMySql = "{\"Spot\":\"Not found on Surf-forecast\"}"
+            reqRetMySql = "{\"NotFoundSF\":\"Here\"}"
             
         date = datetime.now()
         dt_string = date.strftime('%Y-%m-%d %H:%M:%S')
@@ -260,8 +256,8 @@ elif request == "update":
 
         #_______________________Uploads Tides4Fishing records to database____________________________
 
-        reqRetSql = "{'Spot':'Not Found'}"
         print("Looking for "+spot +" on Tides4Fishing")
+        reqRetMySql = ""
         dicT4F = FSEngine.tides4fishing(spot)
         if dicT4F != 0:
             print("Found "+spot+" on Tides4Fishing")
@@ -273,7 +269,7 @@ elif request == "update":
             #         break
             #     reqRetMySql = FSResults
         else:
-            reqRetMySql = "{\"Spot\":\"Not found on Tides4Fishing\"}"
+            reqRetMySql = "{\"NotFoundT4F\":\"Here\"}"
         
         #print(reqRetMySql)
         date = datetime.now()
@@ -285,9 +281,9 @@ elif request == "update":
         cursor.close()
         sqlCursor.close()
 elif request == "clearSearch":
-    sqlCursor=mssqlDB.cursor()
+    sqlCursor=mssqlDB.cursor()        
     sqlCursor.execute("DELETE FROM searchForecasts WHERE date_time < DATEADD(hh,-1, GETDATE())")
-    sqlCursor.close()
+    sqlCursor.close()   
 
 else:
     print ("Input arguments incorrect")   

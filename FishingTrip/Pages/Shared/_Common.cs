@@ -308,6 +308,35 @@ namespace FishingTrip.Pages.Shared
             return dayInfo;
         }
 
+        public static void addRequest(string spot, string userID, int type) //type 0 = search, 1 = favourited
+        {
+            SqlConnection cnn = linuxConnect();
+            SqlDataReader rdr = null;
+
+            string query = "SELECT * FROM forecastRequests WHERE spot = @fishingSpot AND requestType = @req";
+            SqlCommand cmd = new SqlCommand(query,cnn);
+            cmd.Parameters.AddWithValue("@fishingSpot", spot);
+            //cmd.Parameters.AddWithValue("@userID", userID);
+            cmd.Parameters.AddWithValue("@req", type);
+
+            using (rdr = cmd.ExecuteReader())
+            { 
+                Console.WriteLine("Checking " + spot);
+                if (!rdr.HasRows)
+                {
+                    Console.WriteLine("added " + spot);
+                    rdr.Close();
+                    query = "INSERT INTO forecastRequests (spot, date_time, UserName, requestType) VALUES (@fishingSpot, GETDATE(), @userID, @req)";
+                    cmd = new SqlCommand(query, cnn);
+                    cmd.Parameters.AddWithValue("@fishingSpot", spot);
+                    cmd.Parameters.AddWithValue("@userID", userID);
+                    cmd.Parameters.AddWithValue("@req", type);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            closeDB(cnn, rdr);
+        }
+
         public static bool taskRunning = false;
 
         //public static void isTaskRunning(Task t)
@@ -321,31 +350,31 @@ namespace FishingTrip.Pages.Shared
         //    }
         //}        
 
-        public async static void runTask(string spot, string request, string param)
-        {            
-            if (taskRunning == false)
-            {
-                await Task.Run(() => spot_Forecast_Script(spot, request, param));
-            }
-        }        
+        //public async static void runTask(string spot, string request, string param)
+        //{            
+        //    if (taskRunning == false)
+        //    {
+        //        await Task.Run(() => spot_Forecast_Script(spot, request, param));
+        //    }
+        //}        
 
-        public static void spot_Forecast_Script(string Spot, string request, string param) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
-        {
-            Console.WriteLine("Searching for " + Spot);
-            taskRunning = true;
-            ProcessStartInfo start = new ProcessStartInfo();
-            string pyScript = _ServerConnections.fishScraperPythonFile;
-            start.FileName = _ServerConnections.pythonExeLoc;
-            start.Arguments = string.Format("\"{0}\" {1} \"{2}\" {3}", pyScript, request, Spot, param);
-            start.UseShellExecute = false;
-            start.RedirectStandardOutput = true;
-            Process p = new Process();
-            p.StartInfo = start;
-            p.Start();
-            p.WaitForExit();            
-            taskRunning = false;
-            Console.WriteLine("End search for " + Spot);
-        }
+        //public static void spot_Forecast_Script(string Spot, string request, string param) //WILL NEED TO BE USED TO FIND FORECASTS NOT ON THE FAVOURITE LIST
+        //{
+        //    Console.WriteLine("Searching for " + Spot);
+        //    taskRunning = true;
+        //    ProcessStartInfo start = new ProcessStartInfo();
+        //    string pyScript = _ServerConnections.fishScraperPythonFile;
+        //    start.FileName = _ServerConnections.pythonExeLoc;
+        //    start.Arguments = string.Format("\"{0}\" {1} \"{2}\" {3}", pyScript, request, Spot, param);
+        //    start.UseShellExecute = false;
+        //    start.RedirectStandardOutput = true;
+        //    Process p = new Process();
+        //    p.StartInfo = start;
+        //    p.Start();
+        //    p.WaitForExit();            
+        //    taskRunning = false;
+        //    Console.WriteLine("End search for " + Spot);
+        //}
 
         public static void delSearch(string spot, string uId)
         {

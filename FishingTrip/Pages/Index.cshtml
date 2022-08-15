@@ -88,7 +88,7 @@
                                         {
                                             <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
                                             <input type="hidden" name="emptySearchSpot" value="@spot.Replace(" ","_")" />
-                                            addRequest(spot, userID, 0);
+                                            addRequest(spot, userID, 's');
                                             //runTask(spot, "request", "FTW");
                                         }
                                         else if (spotForecast.spotWeek.Count() > 0 && spotForecast.spotWeek.Keys.First() != "Spot not found")
@@ -133,7 +133,7 @@
                                         {
                                             <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
                                             <input type="hidden" name="emptyFavSpot" value="@spot.Replace(" ","_")" />
-                                            addRequest(spot, userID, 1);
+                                            addRequest(spot, userID, 'f');
                                             //runTask(spot, "update", "");
                                         }
                                         else if (spotForecast.spotWeek.Count != 0 && spotForecast.spotWeek.Keys.First() != "Spot not found")

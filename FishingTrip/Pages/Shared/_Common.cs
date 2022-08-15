@@ -308,21 +308,22 @@ namespace FishingTrip.Pages.Shared
             return dayInfo;
         }
 
-        public static void addRequest(string spot, string userID, int type) //type 0 = search, 1 = favourited
+        public static void addRequest(string spot, string userID, char type) //type 0 = search, 1 = favourited
         {
             SqlConnection cnn = linuxConnect();
             SqlDataReader rdr = null;
 
-            string query = "SELECT * FROM forecastRequests WHERE spot = @fishingSpot AND requestType = @req";
+            string query = "SELECT [id] FROM [dbo].[forecastRequests] WHERE [spot] = @fishingSpot AND [requestType] = @req";
+            //Console.WriteLine(query);
             SqlCommand cmd = new SqlCommand(query,cnn);
             cmd.Parameters.AddWithValue("@fishingSpot", spot);
             //cmd.Parameters.AddWithValue("@userID", userID);
             cmd.Parameters.AddWithValue("@req", type);
 
             using (rdr = cmd.ExecuteReader())
-            { 
-                Console.WriteLine("Checking " + spot);
-                if (!rdr.HasRows)
+            {
+                //Console.WriteLine("Checking " + spot);
+                if(!rdr.HasRows)
                 {
                     Console.WriteLine("added " + spot);
                     rdr.Close();
@@ -336,8 +337,6 @@ namespace FishingTrip.Pages.Shared
             }
             closeDB(cnn, rdr);
         }
-
-        public static bool taskRunning = false;
 
         //public static void isTaskRunning(Task t)
         //{

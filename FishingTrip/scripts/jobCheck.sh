@@ -1,6 +1,6 @@
 #!/bin/bash
 
 while true; do
-  python3 /var/www/malcolmforster.com/fishr/scripts/FSJobs.py
+  python3 /var/www/scripts/FSJobs.py
   sleep 5;
 done

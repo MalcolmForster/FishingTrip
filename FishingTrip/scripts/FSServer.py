@@ -247,7 +247,7 @@ elif request == "update":
                 reqRetMySql = (reqRetMySql+"\""+day+"\":"+FSResults)
             reqRetMySql = reqRetMySql + "}"
         else:
-            reqRetMySql = "{\"Spot\":\"Not found on Surf-forecast\"}"
+            reqRetMySql = "{\"Spot not found\":\"Not found on Surf-forecast\"}"
             
         date = datetime.now()
         dt_string = date.strftime('%Y-%m-%d %H:%M:%S')
@@ -273,7 +273,7 @@ elif request == "update":
             #         break
             #     reqRetMySql = FSResults
         else:
-            reqRetMySql = "{\"Spot\":\"Not found on Tides4Fishing\"}"
+            reqRetMySql = "{\"Spot not found\":\"Not found on Tides4Fishing\"}"
         
         #print(reqRetMySql)
         date = datetime.now()

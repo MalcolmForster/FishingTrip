@@ -190,7 +190,7 @@ namespace FishingTrip.Pages.Shared
             {
                 foreach (KeyValuePair<string, JsonDocument> kvp in jsonDict)
                 {
-                    if (kvp.Key != "Spot not found" || kvp.Key != "NotFoundT4F")
+                    if (kvp.Key != "Spot not found")
                     {
                         //String here is the Day
                         var hoursForDay = JsonSerializer.Deserialize<Dictionary<string, JsonDocument>>(kvp.Value);

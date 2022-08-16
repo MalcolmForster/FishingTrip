@@ -80,8 +80,7 @@
                     {
                         if (spot != "")
                         {
-                            SpotForecast spotForecast = new SpotForecast('s',spot, userID);
-                                <li style="background-color: lightslategrey;" name=@String.Concat("fav",spot.Replace(" ","_"))>
+                            <li style="background-color: lightslategrey;" name=@String.Concat("fav",spot.Replace(" ","_"))>
                                 <h2 style="display:inline;">@spot</h2>
                                 <form method="post" asp-page-handler="RemoveSearch">
                                     <input type="hidden" name="whichSpot" value="@spot"/>
@@ -89,6 +88,7 @@
                                 </form>
                                 <div name="dayForecastDetails" id=@String.Concat(spot.Replace(" ","_"),"_Searched")>
                                     @{
+                                        SpotForecast spotForecast = new SpotForecast('s',spot, userID);
                                         if (spotForecast.spotWeek.Keys.First() == "ToBeFound")
                                         {
                                             <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
@@ -130,12 +130,13 @@
                     {
                         if (spot != "")
                         {
-                            SpotForecast spotForecast = new SpotForecast('f', spot, userID);
+                            
                             //START OF USING OBJECTS
                             <li name=@String.Concat("fav",spot.Replace(" ","_"))>
                                 <h2>@spot</h2>
                                 <div name="dayForecastDetails" id=@String.Concat(spot.Replace(" ","_"),"_Favourite")>
-                                    @{                                        
+                                    @{        
+                                        SpotForecast spotForecast = new SpotForecast('f', spot, userID);
                                         
                                         if (spotForecast.spotWeek.Keys.First() == "ToBeFound") //PROBLEMS WITH THIS SCRIPT CONTINUING TO RUN
                                         {

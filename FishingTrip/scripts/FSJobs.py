@@ -29,15 +29,9 @@ if len(result) > 0:
     reqType = result[0][4]
 
     if reqType == 's':
-        reqType = 0         #added this test to see if it will allow the select query in addRequest() method to work correctly, still no change
-    elif reqType == 'f':
-        reqType == 1
-
-    if reqType == 0:
         fullReq = "request"
-    elif reqType == 1:
+    elif reqType == 'f':
         fullReq = "update"
-
 
     print("Found " + fullReq + " job for fishing spot \'"+spot+"\' for user "+jobFor)
     subprocess.call(['python3', '/var/www/scripts/FSServer.py',fullReq,spot,'FTW'])

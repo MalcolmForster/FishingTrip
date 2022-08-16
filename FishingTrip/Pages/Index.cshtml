@@ -1,5 +1,6 @@
 ﻿@page
 @using Microsoft.AspNetCore.Identity
+@using System.Data.SqlClient;
 @using static FishingTrip.Pages.Shared._Common;
 @using FishingTrip.Pages.Shared;
 @model IndexModel
@@ -22,7 +23,8 @@
 
         @if (SignInManager.IsSignedIn(User))
         
-        {//onload post to c#
+        {
+            //onload post to c#
             string[] week = nextDays(7);
             string userID = User.Claims.ElementAtOrDefault(0).Value;
             
@@ -70,7 +72,10 @@
             <br/>
 
             <ul class="favSpotList">
-                @{  string[] searchedSpots = getSearchedSpots(userID);          
+                @{
+                    openLinuxConnection();
+                    //Console.WriteLine("SearchList");
+                    string[] searchedSpots = getSearchedSpots(userID);          
                     foreach (string spot in searchedSpots)
                     {
                         if (spot != "")
@@ -111,12 +116,15 @@
                             </li>
                         }
                     }
+                    closeLinuxConnection();
                 }
             </ul>
 
             <h2>Conditions at your favourite fishing spots</h2>
             <ul class="favSpotList">
-                @{  string[] favSpots = getFavSpots(userID);
+                @{  openLinuxConnection();
+                    //Console.WriteLine("FavList");
+                    string[] favSpots = getFavSpots(userID);
                     // this may need to change from a list. What I am aiming to do is have the conditions shown for the users favourite spots for easy comparison. This will require a loading animation while the server recieves and redirects the fishing spots forecast. This information is all passed with a JSON file for each day, for each spot, perhaps should limit to 3 spots initially.
                     foreach (string spot in favSpots)
                     {
@@ -156,6 +164,7 @@
                             </li>
                         }
                     }
+                    closeLinuxConnection();
                 }
             </ul>
 

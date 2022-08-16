@@ -10,6 +10,7 @@ namespace FishingTrip.Pages.Shared
 {
     public class _Common
     {
+        public static SqlConnection linux = null;
         public static string[] nextDays(int num)
         {
             string[] days = new string[num];
@@ -26,38 +27,56 @@ namespace FishingTrip.Pages.Shared
             return days;
         }
 
-        private static SqlConnection dbConnect()
-        {
-            string MyConnectionString = _ServerConnections.main;
-            SqlDataReader rdr = null;
-            SqlConnection cnn;
-            cnn = new SqlConnection(MyConnectionString);
+        //private static SqlConnection dbConnect()
+        //{
+        //    string MyConnectionString = _ServerConnections.main;
+        //    SqlDataReader rdr = null;
+        //    SqlConnection cnn;
+        //    cnn = new SqlConnection(MyConnectionString);
 
-            try
-            {
-                cnn.Open();
-                return cnn;
-            }
-            catch
-            {
-                Console.WriteLine("Failed to connect to LOCAL database");
-                return null;
-            }
-        }
+        //    try
+        //    {
+        //        cnn.Open();
+        //        return cnn;
+        //    }
+        //    catch
+        //    {
+        //        //Console.WriteLine("Failed to connect to LOCAL database");
+        //        return null;
+        //    }
+        //}
 
         private static SqlConnection linuxConnect()
         {
-            string MyConnectionString = _ServerConnections.linux;
-            SqlConnection cnn = new SqlConnection(MyConnectionString);
-            try
+            if (linux == null)
             {
-                cnn.Open();
-                return cnn;
+                string MyConnectionString = _ServerConnections.linuxLocal;
+                linux = new SqlConnection(MyConnectionString);
+                try
+                {
+                    try
+                    {
+                        linux.Open();
+                        return linux;
+                    }
+                    catch
+                    {
+                       // Console.WriteLine("Failed to connect to local host server");
+                        MyConnectionString = _ServerConnections.linux;
+                        linux = new SqlConnection(MyConnectionString);
+                        linux.Open();
+                        return linux;
+                    }
+                }
+                catch
+                {
+                    Console.WriteLine("Failed to connect to LINUX database");
+                    return null;
+                }
             }
-            catch
+            else
             {
-                Console.WriteLine("Failed to connect to LINUX database");
-                return null;
+                return linux;
             }
         }
 
@@ -69,23 +88,34 @@ namespace FishingTrip.Pages.Shared
             }
             if (cnn != null)
             {
-                cnn.Close();
+                //cnn.Close();
             }
         }
-        private static void dbExecute(string command)
+
+        public static void openLinuxConnection()
         {
-            SqlConnection cnn = dbConnect();
-
-            try
-            {
-                SqlCommand cmd = new SqlCommand(command, cnn);
-            }
-            catch
-            {
-                Console.WriteLine("Execute command failed");
-            }
-
+            SqlConnection newCon = linuxConnect();
         }
+
+        public static void closeLinuxConnection()
+        {
+            linux.Close();
+            linux = null;
+        }
+        //private static void dbExecute(string command)
+        //{
+        //    SqlConnection cnn = dbConnect();
+
+        //    try
+        //    {
+        //        SqlCommand cmd = new SqlCommand(command, cnn);
+        //    }
+        //    catch
+        //    {
+        //        Console.WriteLine("Execute command failed");
+        //    }
+
+        //}
         //public class Hour
         //{
         //    public string Time { get; set; }
@@ -304,7 +334,7 @@ namespace FishingTrip.Pages.Shared
 
                 }
             }
-            closeDB(cnn, rdr);
+            //closeDB(cnn, rdr);
             return dayInfo;
         }
 
@@ -396,7 +426,7 @@ namespace FishingTrip.Pages.Shared
         public static string[] getSearchedSpots(string uId)
         {
             SqlDataReader rdr = null;
-            SqlConnection cnn = linuxConnect();
+            SqlConnection cnn = linux;//linuxConnect();
 
             if (cnn != null)
             {
@@ -437,7 +467,7 @@ namespace FishingTrip.Pages.Shared
 
         public static bool find_Spot_In_Tables(string spotSearched, string uId)
         {
-            SqlConnection cnn = linuxConnect();
+            SqlConnection cnn = linux;//linuxConnect();
             SqlDataReader rdr = null;
             bool spotForecastFound = false;
             string[] tablesToSearch = { "favForecastsSF", "favForecastsT4F", "searchForecasts" };
@@ -616,7 +646,7 @@ namespace FishingTrip.Pages.Shared
                 rdr.Close();
             }
             
-            closeDB(cnn, rdr);
+            closeDB(null, rdr);
             checkDBsForSearch(spotSearched, uId);
 
         }
@@ -624,7 +654,7 @@ namespace FishingTrip.Pages.Shared
         // This method returns a list of spots the use has on their favourite list
         public static string[] getFavSpots(string uId)
         {
-            SqlConnection cnn = linuxConnect();
+            SqlConnection cnn = linux;//linuxConnect();
             SqlDataReader rdr = null;
 
             if (cnn != null)
@@ -666,13 +696,14 @@ namespace FishingTrip.Pages.Shared
                     Console.WriteLine("getFavSpots failed to execute reader");
                 }
             }
-            closeDB(cnn, rdr);
+            closeDB(null, rdr);
             string[] emptyString = new string[0];
             return emptyString;
         }
 
         public static void add_Favourite(string fav, string uId)
         {
+            openLinuxConnection();
             string[] allSpots = getFavSpots(uId);
 
             if (allSpots != null || allSpots.Length > 0)
@@ -713,52 +744,59 @@ namespace FishingTrip.Pages.Shared
             {
                 Console.WriteLine("No favourites found");
             }
+            closeLinuxConnection();
         }
 
         public static void remove_Favourite(string fav, string uId)
         {
+            openLinuxConnection();
             string[] allSpots = getFavSpots(uId);
-
-            if (allSpots != null || allSpots.Length > 0)
+            if(fav != "")
             {
-                bool rmvFav = false;
-                foreach (string s in allSpots)
+                if (allSpots != null || allSpots.Length > 0)
                 {
-                    if (s == fav)
+                    bool rmvFav = false;
+                    foreach (string s in allSpots)
                     {
-                        rmvFav = true;
-                        Console.WriteLine(fav + " removed from favourites");
-                        break;
+                        if (s == fav)
+                        {
+                            rmvFav = true;
+                            Console.WriteLine(fav + " removed from favourites");
+                            break;
+                        }
                     }
-                }
-                if (rmvFav == true)
-                {
-                    string newFavConcat = String.Join(",", allSpots).Replace(fav + ",", "");
-                    SqlConnection conn = linuxConnect();
-                    string query = "UPDATE [dbo].[userFavourites] SET [FavSpots] = @newFavs WHERE Id= @userID;";
-                    SqlCommand alterFavs = new SqlCommand(query, conn);
-                    alterFavs.Parameters.AddWithValue("@newFavs", newFavConcat);
-                    alterFavs.Parameters.AddWithValue("@userID", uId);
+                    if (rmvFav == true)
+                    {
+                        string newFavConcat = String.Join(",", allSpots).Replace(fav + ",", "");
+                        SqlConnection conn = linuxConnect();
+                        string query = "UPDATE [dbo].[userFavourites] SET [FavSpots] = @newFavs WHERE Id= @userID;";
+                        SqlCommand alterFavs = new SqlCommand(query, conn);
+                        alterFavs.Parameters.AddWithValue("@newFavs", newFavConcat);
+                        alterFavs.Parameters.AddWithValue("@userID", uId);
 
-                    try
-                    {
-                        alterFavs.ExecuteNonQuery();
+                        try
+                        {
+                            alterFavs.ExecuteNonQuery();
+                        }
+                        catch
+                        {
+                            Console.WriteLine("Something went wrong when updating table");
+                        }
+                        closeDB(conn, null);
                     }
-                    catch
+                    else
                     {
-                        Console.WriteLine("Something went wrong when updating table");
+                        Console.WriteLine(fav + " not found in favourites");
                     }
-                    closeDB(conn, null);
                 }
                 else
                 {
-                    Console.WriteLine(fav + " not found in favourites");
+                    Console.WriteLine("No favourites found");
                 }
+
             }
-            else
-            {
-                Console.WriteLine("No favourites found");
-            }
+            closeLinuxConnection();
+
         }
         public static void newForecastDiv(string fishingSpot)
         {

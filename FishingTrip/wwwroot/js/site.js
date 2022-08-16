@@ -16,51 +16,73 @@ function setDays() {
     }
 
     return daysToShow;
+}
 
+function displayDay(day,daysToShow) {
+    if (daysToShow.includes(day.getAttribute('id'))) {
+        day.style.display = "block";
+    } else {
+        day.style.display = "none";
+    }
 }
 
 function toggleForecast(daysToShow) {
     const avaliableData = document.getElementsByName("forecastDiv");
+    //for (let i = 0; i < avaliableData.length; i++) {
+    //    var s = avaliableData[i].getAttribute('id');
+    //    if (daysToShow.includes(s)) {
+    //        avaliableData[i].style.display = "block";
+    //    } else {
+    //        avaliableData[i].style.display = "none";
+    //    }
+    //}
     for (let i = 0; i < avaliableData.length; i++) {
-        var s = avaliableData[i].getAttribute('id');
-        if (daysToShow.includes(s)) {
-            avaliableData[i].style.display = "block";
-        } else {
-            avaliableData[i].style.display = "none";
-        }
+        //var s = avaliableData[i].getAttribute('id');
+        displayDay(avaliableData[i], daysToShow);
     }
 }
 
+const timer = ms => new Promise(res => setTimeout(res, ms))
+
+async function myLoop() {
+
+    await timer(3000);
+    searches = document.getElementsByName("emptySearchSpot");
+    favourites = document.getElementsByName("emptyFavSpot");
+
+    if (searches.length > 0) {
+        for (let i = 0; i < searches.length; i++) {
+            //$(divID).load(location.href + " " + divID);
+            refreshDiv("#" + searches[i].value + "_Searched");
+        }
+    }
+
+    if (favourites.length > 0) {
+        for (let i = 0; i < favourites.length; i++) {
+            refreshDiv("#" + favourites[i].value + "_Favourite");
+        }
+    }   
+
+    const daysToShow = setDays();
+    toggleForecast(daysToShow);
+
+    searches = document.getElementsByName("emptySearchSpot");
+    favourites = document.getElementsByName("emptyFavSpot");
+
+    if (searches.length > 0 || favourites.length > 0) {
+        myLoop();
+    }
+} 
+
 function refreshDiv(divID) {
-    console.log(divID);
-    $(divID).load(location.href +" "+divID);
+    console.log(" " + divID + " >*");
+    $(divID).load(" " + divID + " >*");    
 }
 
 function indexLoad() {
     const daysToShow = setDays();
     toggleForecast(daysToShow);
-
-    if(document.getElementsByName("emptySearchSpot").length > 0) {
-        setTimeout(() => {
-            for(let i = 0; i < document.getElementsByName("emptySearchSpot").length; i++) {
-                refreshDiv("#"+document.getElementsByName("emptySearchSpot")[i].value + "_Searched");                
-            }
-            indexLoad();
-        }, 5000);        
-    };
-
-    if (document.getElementsByName("emptyFavSpot").length > 0) {
-        setTimeout(() => {
-            for (let i = 0; i < document.getElementsByName("emptyFavSpot").length; i++) {
-                refreshDiv("#" + document.getElementsByName("emptyFavSpot")[i].value + "_Favourite");
-            }
-            indexLoad();
-        }, 5000);
-    };
-}
-
-function forecastDicToDiv() {
-
+    myLoop();
 }
 
 function newForecastDiv() {

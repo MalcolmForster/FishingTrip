@@ -1,4 +1,3 @@
-#from operator import concat
 import mechanicalsoup
 from datetime import datetime
 
@@ -206,13 +205,28 @@ def SF_info(day, data_soup):
         i += 1        
     return (FSResults)
 
+
+def NEWsurfForecast(days,location):
+    daysResult = 0
+    data_soup = SF_browser(location)
+    print("Data_soup created")
+    daysResult = dict()
+    if data_soup != 0:
+        for day in days:        
+            dayResult = SF_info(day, data_soup)
+            daysResult[day] = dayResult
+    else:
+        print("Not found on SF")
+
+    return daysResult
+
+
+
 def surfForecast(day, location):
-    dayResult = 0
-    
+    dayResult = 0    
     data_soup = SF_browser(location)
     if data_soup != 0:
         dayResult = SF_info(day, data_soup)
-
     # Need to add the day to the start of the JSON
     return dayResult
         
@@ -327,14 +341,6 @@ def t4f_browser(location):
 
     allDays = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
     allHours = ["0 AM", "1 AM", "2 AM", "3 AM", "4 AM", "5 AM","6 AM", "7 AM", "8 AM","9 AM", "10 AM", "11 AM", "12 PM", "1 PM", "2 PM", "3 PM", "4 PM", "5 PM","6 PM", "7 PM", "8 PM","9 PM", "10 PM", "11 PM"] 
-
-
- 
-
-
-
-
-
 
     allDataTypes = [
         "Fish activity",

@@ -162,38 +162,45 @@ elif request == "request":
     spotFound = False
     reqRet=""
     
-    for day in days:        
-        data_soup = FSEngine.surfForecast(day,spot)        
-        FSResults = checkJSON(data_soup,"Surf-forecast")
-        if (FSResults.find("NULL") == -1):
-            if day != days[0]:
-                reqRet = reqRet+","
-            reqRet = (reqRet+"\""+day+"\":"+FSResults)
-        else:
-            print("Not found on SF")
-            break   
+    data_soup = FSEngine.NEWsurfForecast(days, spot)
+    FSResults = checkJSON(data_soup,"Surf-forecast")
+    if (FSResults.find("NULL") == -1):
+        reqRetSF = FSResults
 
-    if reqRet != "": # if it is found on SF
+    # for day in days:        
+    #     data_soup = FSEngine.surfForecast(day,spot)        
+    #     FSResults = checkJSON(data_soup,"Surf-forecast")
+    #     if (FSResults.find("NULL") == -1):
+    #         if day != days[0]:
+    #             reqRet = reqRet+","
+    #         reqRet = (reqRet+"\""+day+"\":"+FSResults)
+    #     else:
+    #         print("Not found on SF")
+    #         break   
+
+    if reqRetSF != "{}": # if it is found on SF
         spotFound = True
+        reqRet = reqRetSF
         print("Found on SF")
-    reqRet = "{"+reqRet+"}"
+    #reqRet = "{"+reqRet+"}"
 
     if fullWeekResults == True:
         sqlCursor = mssqlDB.cursor()
         if spotFound == False:
-                data_soup = FSEngine.tides4fishing(spot)
-                reqRetT4F = checkJSON(data_soup,"Tides4Fishing")
-                if (reqRetT4F.find("NULL") == -1):
-                    reqRet = reqRetT4F
-                    print("Found on T4F")
-                else:
-                    print("Not found on T4F")
-                    reqRet=json.dumps({"Spot not found":"Here"})
-        sqlCursor.execute("UPDATE searchForecasts SET dataSF = '%s' WHERE spot = '%s'"% (reqRet, spot)) 
+            data_soup = FSEngine.tides4fishing(spot)
+            reqRetT4F = checkJSON(data_soup,"Tides4Fishing")
+            if (reqRetT4F.find("NULL") == -1):
+                reqRet = reqRetT4F
+                print("Found on T4F")
+            else:
+                print("Not found on T4F")
+                reqRet=json.dumps({"Spot not found":"Here"})
+                
+        sqlCursor.execute("UPDATE searchForecasts SET dataSF = '%s' WHERE spot = '%s'"% (reqRet, spot))
         sqlCursor.close()
     else:
         for day in days:
-            T4F_data_soup = (FSEngine.tides4fishing(spot))[day] 
+            T4F_data_soup = (FSEngine.tides4fishing(spot))
             T4FResults = checkJSON(T4F_data_soup, "Tides4Fishing")
             if (T4FResults.find("Spot") == -1):
                 reqRetT4F.append([day,T4FResults])
@@ -230,6 +237,16 @@ elif request == "update":
 
         reqRetSql = "{'Spot':'Not Found'}"
         print("Looking for "+spot+ " on SurfForecast")
+        
+        # data_soup = FSEngine.NEWsurfForecast(weekFromToday, spot)
+        # FSResults = checkJSON(data_soup,"Surf-forecast")
+        # if (FSResults.find("NULL") == -1):
+        #     reqRetMySql = FSResults
+        # else:
+        #     reqRetMySql = "{\"Spot not found\":\"Not found on Surf-forecast\"}"
+
+
+
         data_soup = FSEngine.SF_browser(spot)
         if data_soup != 0:
             print("Found "+spot+ " on SurfForecast")

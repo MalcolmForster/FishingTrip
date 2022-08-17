@@ -94,7 +94,6 @@
                                             <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
                                             <input type="hidden" name="emptySearchSpot" value="@spot.Replace(" ","_")" />
                                             addRequest(spot, userID, 's');
-                                            //runTask(spot, "request", "FTW");
                                         }
                                         else if (spotForecast.spotWeek.Count() > 0 && spotForecast.spotWeek.Keys.First() != "Spot not found")
                                         {
@@ -129,15 +128,14 @@
                     foreach (string spot in favSpots)
                     {
                         if (spot != "")
-                        {
-                            
+                        {                            
                             //START OF USING OBJECTS
                             <li name=@String.Concat("fav",spot.Replace(" ","_"))>
                                 <h2>@spot</h2>
                                 <div name="dayForecastDetails" id=@String.Concat(spot.Replace(" ","_"),"_Favourite")>
-                                    @{        
+                                    @{
                                         SpotForecast spotForecast = new SpotForecast('f', spot, userID);
-                                        
+
                                         if (spotForecast.spotWeek.Keys.First() == "ToBeFound") //PROBLEMS WITH THIS SCRIPT CONTINUING TO RUN
                                         {
                                             <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>

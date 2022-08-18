@@ -701,10 +701,35 @@ namespace FishingTrip.Pages.Shared
             return emptyString;
         }
 
+
+
+        private static void add_Fav_List(string uId)
+        {
+            SqlConnection conn = linuxConnect();
+            string query = "SELECT * FROM [dbo].[userFavourites] WHERE Id = @userID;" ;
+            SqlCommand cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@userID", uId);
+            using (SqlDataReader rdr = cmd.ExecuteReader())
+            {
+                if (!rdr.HasRows)
+                {
+                    rdr.Close();
+                    query = "INSERT INTO [dbo].[userFavourites] (Id,FavSpots) VALUES (@userID, '');";
+                    cmd = new SqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@userID", uId);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
         public static void add_Favourite(string fav, string uId)
         {
-            openLinuxConnection();
+            //openLinuxConnection();
+            SqlConnection conn = linuxConnect();
+            add_Fav_List(uId);
+            
             string[] allSpots = getFavSpots(uId);
+
 
             if (allSpots != null || allSpots.Length > 0)
             {
@@ -722,7 +747,7 @@ namespace FishingTrip.Pages.Shared
                 {
                     //runTask(fav,"update", "");
                     string newFavConcat = String.Join(",", allSpots) + fav + ",";
-                    SqlConnection conn = linuxConnect();
+                    //SqlConnection conn = linuxConnect();
                     string query = "UPDATE [dbo].[userFavourites] SET [FavSpots] = @newFavs WHERE Id= @userID;";
                     SqlCommand alterFavs = new SqlCommand(query, conn);
                     alterFavs.Parameters.AddWithValue("@newFavs", newFavConcat);
@@ -749,7 +774,8 @@ namespace FishingTrip.Pages.Shared
 
         public static void remove_Favourite(string fav, string uId)
         {
-            openLinuxConnection();
+            //openLinuxConnection();
+            SqlConnection conn = linuxConnect();
             string[] allSpots = getFavSpots(uId);
             if(fav != "")
             {
@@ -768,7 +794,7 @@ namespace FishingTrip.Pages.Shared
                     if (rmvFav == true)
                     {
                         string newFavConcat = String.Join(",", allSpots).Replace(fav + ",", "");
-                        SqlConnection conn = linuxConnect();
+                        //SqlConnection conn = linuxConnect();
                         string query = "UPDATE [dbo].[userFavourites] SET [FavSpots] = @newFavs WHERE Id= @userID;";
                         SqlCommand alterFavs = new SqlCommand(query, conn);
                         alterFavs.Parameters.AddWithValue("@newFavs", newFavConcat);

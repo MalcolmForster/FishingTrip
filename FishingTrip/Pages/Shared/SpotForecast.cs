@@ -24,12 +24,7 @@ namespace FishingTrip.Pages.Shared
                 if (spotWeek.Keys.First() == "ToBeFound")
                 {
                     spotWeek = getForecastConditions("T4F", spot, uId);
-                    //if (spotWeek.Keys.First() == "ToBeFound")
-                    //{
-                    //    spotWeek.Clear();
-                    //    Hour[] newHour = new Hour[0];
-                    //    spotWeek.Add("Spot not found", newHour);
-                    //}
+
                 }
             }
         }

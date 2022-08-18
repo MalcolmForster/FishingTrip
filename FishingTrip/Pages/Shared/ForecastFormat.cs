@@ -70,11 +70,5 @@ namespace FishingTrip.Pages.Shared
                         "<table class=\"forecastTable\"><tr><th></th>" + concatTimes + "</tr><tr>" +
                         concatWaveInfo+"</tr></table></div>";
         }
-
-        public static void forecastDiv()
-        {
-
-        }
-    }
-    
+    }    
 }

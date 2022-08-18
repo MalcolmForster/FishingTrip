@@ -15,33 +15,12 @@
 <body onload="indexLoad()">
     <div class="text-center">
         <h1 class="display-4">FishingTrip</h1>
-        <h2>For planning and tracking all of you fishing trips</h2>
+        <h3>For planning and tracking all of you fishing trips</h3>
 
-        @*    Ideas as follows:
-        Weather forecast for favourite spots
-        See recent posts/fishing trips of friends and self*@
-
-        @if (SignInManager.IsSignedIn(User))
-        
+        @if (SignInManager.IsSignedIn(User))        
         {
-            //onload post to c#
             string[] week = nextDays(7);
             string userID = User.Claims.ElementAtOrDefault(0).Value;
-            
-            
-            //remove_Favourite("Test");
-            <h1>Recent Posts and fishing trips from friends</h1>
-
-            <p>
-                Creating a method to collect a certain number of posts from the database from friends and own user
-                This could be harder to do because of the multiple database
-                Use a combine function to add them all together?
-            </p>
-
-            <p>Insert recent friend posts here</p>
-            //Find method to be able to find friends and then add there most recent posts similar to the old PHP style site
-
-            <h1>Fishing location weather forecast</h1>
             <form id="checkDays" action="~/" method="post">
                 <label>Days to compare:</label>
                 @{
@@ -181,16 +160,9 @@
             </form>
         }
         else
-        {
-                <h2>For tracking all of your fishing data</h2>
-
-                <br></br>
-                <h3>What this application is capable of:</h3>
-                <ul>
-                    <li class="list">Returns weather and wave information for you favourite fishing locations</li>
-                    <li class="list">Recommends best fishing days for you based on fishing history</li>
-                    <li class="list">Records your fishing trips for you and the conditions</li>
-                </ul>
+        {       
+            <br /><br />
+            <h3>Please log or register using the button on the top right</h3>
         }
         </div>
 

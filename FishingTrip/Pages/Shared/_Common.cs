@@ -210,7 +210,13 @@ namespace FishingTrip.Pages.Shared
                                 newHour.LowTide = kvp2.Value.RootElement.GetProperty("Low Tide").ToString();
                                 newHour.HighTide = kvp2.Value.RootElement.GetProperty("High Tide").ToString();
                                 //newHour.Chilltemp = kvp2.Value.RootElement.GetProperty("Chill temp").ToString();
-                                //newHour.WavePower = kvp2.Value.RootElement.GetProperty("Wave Power").ToString();
+
+                                JsonElement property;
+                                if (kvp2.Value.RootElement.TryGetProperty("Wave Power", out property))
+                                {
+                                    newHour.WavePower = property.ToString();
+                                }
+                                
                                 //newHour.WindSpeed = kvp2.Value.RootElement.GetProperty("Wind Speed").ToString();
                                 //newHour.Temperature = kvp2.Value.RootElement.GetProperty("Temperature").ToString();
                                 newHour.WaveHeight = kvp2.Value.RootElement.GetProperty("Wave Height").ToString();

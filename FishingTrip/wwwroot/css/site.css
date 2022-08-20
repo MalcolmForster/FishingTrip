@@ -10,7 +10,7 @@ html {
 
 .tabSpace {
     display: inline-block;
-    tab-size:40px;
+    tab-size: 40px;
 }
 
 @media (min-width: 768px) {
@@ -43,12 +43,12 @@ h1 {
 }
 
 h2 {
-    font-size: 20px;
+    font-size: min(3vmin,20px);
 }
 
 h3 {
     margin-top: 10px;
-    margin-bottom:2px;
+    margin-bottom: 2px;
     font-size: 15px;
     font-style: italic;
 }
@@ -84,11 +84,20 @@ select {
     padding: 0px;
 }
 
+.forecastDay {
+    float:left;
+    display:block;
+}
+
+.blocking {
+    float: right;
+}
+
     .favSpotList li {
-        padding:10px;
-        margin: 10px;
+        padding: 10px;
+        display: block;
+        margin-top: 10px;
         height: auto;
-        width: 100%;
         border-radius: 10px;
         border: 10px;
         background-color: black;
@@ -173,11 +182,16 @@ select {
 
 /*end of loading animation*/
 
+label {
+    padding: 5px;
+    font-size: min(2vmin,15px);
+}
+
 .forecastDiv {
     background-color: dimgray;
-    border-radius:5px;
-    margin:5px;
-    padding:10px;
+    border-radius: 5px;
+    margin: 5px;
+    padding: 10px;
 }
 
 .forecastTable {
@@ -186,9 +200,9 @@ select {
 }
 
     .forecastTable th {
-        font-size: 15px;
+        font-size: min(2vmin,15px);
     }
 
     .forecastTable td {
-        font-size: 18px;
+        font-size: min(2vmin,15px);
     }

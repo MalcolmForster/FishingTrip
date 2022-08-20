@@ -28,15 +28,15 @@
                     {
                         if (week[i] != "")
                         {
-                                    <label>&nbsp&nbsp&nbsp&nbsp</label>
-                                    <label>@week[i]:</label>
+                                            <label>&nbsp&nbsp&nbsp&nbsp</label>
+                                            <label>@week[i]:</label>
                             if (i < 3)
                             {
-                                        <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] checked />
+                                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] checked />
                             }
                             else
                             {
-                                        <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] />
+                                                <input type="checkbox" name="dayChk" onclick="indexLoad()" value=@week[i] />
                             }
                         }
                     }
@@ -44,7 +44,7 @@
             </form>
             <h2>Find forecast for a fishing spot</h2>
             <form id="seachForSpot" method="post" action="~/">
-                <input id="newSpotInput" name="newSpotInput" type="text" size="50" placeholder="Input fishing location here" />
+                <input id="newSpotInput" name="newSpotInput" type="text" size="30" placeholder="Input fishing location here" />
                 <input type="hidden" name="searchSpot" value="true" />
                 <input id="newSpotSubmit" type="submit" value="Find forecast"/>
             </form>
@@ -59,19 +59,19 @@
                     {
                         if (spot != "")
                         {
-                            <li style="background-color: lightslategrey;" name=@String.Concat("fav",spot.Replace(" ","_"))>
-                                <h2 style="display:inline;">@spot</h2>
-                                <form method="post" asp-page-handler="RemoveSearch">
-                                    <input type="hidden" name="whichSpot" value="@spot"/>
-                                    <button type="submit">Remove Search</button>
-                                </form>
-                                <div name="dayForecastDetails" id=@String.Concat(spot.Replace(" ","_"),"_Searched")>
-                                    @{
+                                    <li style="background-color: lightslategrey;" name=@String.Concat("fav",spot.Replace(" ","_"))>
+                                        <h2 style="display:inline-block;">@spot</h2>
+                                        <form method="post" asp-page-handler="RemoveSearch" style="display:inline-block;">
+                                            <input type="hidden" name="whichSpot" value="@spot"/>
+                                            <button type="submit">Remove Search</button>
+                                        </form>
+                                        <div name="dayForecastDetails" id=@String.Concat(spot.Replace(" ","_"),"_Searched")>
+                                            @{
                                         SpotForecast spotForecast = new SpotForecast('s',spot, userID);
                                         if (spotForecast.spotWeek.Keys.First() == "ToBeFound")
                                         {
-                                            <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-                                            <input type="hidden" name="emptySearchSpot" value="@spot.Replace(" ","_")" />
+                                                            <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                                                            <input type="hidden" name="emptySearchSpot" value="@spot.Replace(" ","_")" />
                                             addRequest(spot, userID, 's');
                                         }
                                         else if (spotForecast.spotWeek.Count() > 0 && spotForecast.spotWeek.Keys.First() != "Spot not found")
@@ -81,17 +81,17 @@
                                                 if (dayInfo.Key != "Spot not found") //SHOULD BE ABLE TO REMOVE??
                                                 {
                                                     ForecastDiv newdiv = new ForecastDiv(dayInfo);
-                                                    @Html.Raw(newdiv.rawDiv);
+                                                                    @Html.Raw(newdiv.rawDiv);
                                                 }
                                             }
                                         }
                                         else if (spotForecast.spotWeek.Keys.First() == "Spot not found")
                                         {
-                                            <p>Spot was not found</p>
+                                                            <p>Spot was not found</p>
                                         }
-                                }
-                                </div>
-                            </li>
+                                        }
+                                        </div>
+                                    </li>
                         }
                     }
                     closeLinuxConnection();
@@ -109,16 +109,15 @@
                         if (spot != "")
                         {                            
                             //START OF USING OBJECTS
-                            <li name=@String.Concat("fav",spot.Replace(" ","_"))>
-                                <h2>@spot</h2>
-                                <div name="dayForecastDetails" id=@String.Concat(spot.Replace(" ","_"),"_Favourite")>
-                                    @{
+                                    <li name=@String.Concat("fav",spot.Replace(" ","_"))>
+                                        <h2>@spot</h2>
+                                        <div name="dayForecastDetails" id=@String.Concat(spot.Replace(" ","_"),"_Favourite")>
+                                            @{
                                         SpotForecast spotForecast = new SpotForecast('f', spot, userID);
-
                                         if (spotForecast.spotWeek.Keys.First() == "ToBeFound") //PROBLEMS WITH THIS SCRIPT CONTINUING TO RUN
                                         {
-                                            <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
-                                            <input type="hidden" name="emptyFavSpot" value="@spot.Replace(" ","_")" />
+                                                            <div id=@(spot.Replace(" ","_")+"_Info") class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                                                            <input type="hidden" name="emptyFavSpot" value="@spot.Replace(" ","_")" />
                                             addRequest(spot, userID, 'f');
                                             //runTask(spot, "update", "");
                                         }
@@ -129,17 +128,17 @@
                                                 if (dayInfo.Key != "Not Found")
                                                 {
                                                     ForecastDiv newdiv = new ForecastDiv(dayInfo);
-                                                    @Html.Raw(newdiv.rawDiv);
+                                                                    @Html.Raw(newdiv.rawDiv);
                                                 }
                                             }
                                         }
                                         else if (spotForecast.spotWeek.Keys.First() == "Spot not found")
                                         {
-                                            <p>Spot was not found</p>
+                                                            <p>Spot was not found</p>
                                         }
-                                    }
-                                </div>
-                            </li>
+                                            }
+                                        </div>
+                                    </li>
                         }
                     }
                     closeLinuxConnection();
